@@ -2,10 +2,11 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="所有文章" description="所有文章列表">
-  <header style="margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--border);">
-    <h1 style="font-size: 28px;">所有文章</h1>
-    <p class="text-secondary" style="margin-top: 8px;">共 <span id="article-count">...</span> 篇</p>
+<BaseLayout title="文章存檔" description="所有文章列表">
+  <header class="collection-header">
+    <p class="eyebrow">Archive</p>
+    <h1>文章存檔</h1>
+    <p>按時間整理全部 AI 工程筆記與 OpenClaw 來源摘要，共 <span id="article-count">...</span> 篇。</p>
   </header>
 
   <div id="archive-content">
@@ -43,25 +44,37 @@ async function loadArchive() {
     const years = Object.keys(byYear).sort((a, b) => b.localeCompare(a));
 
     container.innerHTML = years.map(year => `
-      <section style="margin-bottom: 32px;">
-        <h2 style="font-size: 20px; font-weight: 700; color: var(--accent); margin-bottom: 16px;">${year}</h2>
-        ${byYear[year].map(article => `
-          <a href="/post/${article.slug}" class="card" style="display: block; text-decoration: none; margin-bottom: 12px; padding: 16px;">
-            ${article.category ? `<span style="font-size: 12px; color: ${article.category.color};">${article.category.icon} ${article.category.name}</span>` : ''}
-            <h3 style="margin: 4px 0; color: var(--text);">${article.title}</h3>
-            <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">${article.excerpt || ''}</p>
-            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);">
-              ${article.published_at ? new Date(article.published_at).toLocaleDateString('zh-TW') : ''}
-              ${article.reading_time ? ` · ${article.reading_time} 分鐘閱讀` : ''}
-            </div>
-          </a>
-        `).join('')}
+      <section class="archive-year">
+        <h2>${year}</h2>
+        <div>
+          ${byYear[year].map(article => `
+            <a href="/post/${article.slug}" class="collection-card">
+              <div class="collection-card-meta">
+                ${article.category ? `<span style="color: ${article.category.color};">${article.category.icon || ''} ${escapeHtml(article.category.name)}</span>` : ''}
+                <time>${article.published_at ? new Date(article.published_at).toLocaleDateString('zh-TW') : ''}</time>
+                <span>${article.reading_time || 1} 分鐘</span>
+              </div>
+              <h3>${escapeHtml(article.title)}</h3>
+              <p>${escapeHtml(article.excerpt || '')}</p>
+            </a>
+          `).join('')}
+        </div>
       </section>
     `).join('');
   } catch (err) {
     console.error('Failed to load archive:', err);
     container.innerHTML = '<div class="card text-secondary" style="padding: 40px; text-align: center;">載入失敗。</div>';
   }
+}
+
+function escapeHtml(s) {
+  if (typeof s !== 'string') return '';
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 loadArchive();

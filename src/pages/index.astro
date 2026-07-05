@@ -28,50 +28,94 @@ async function loadHome() {
 
     if (articles.length === 0) {
       container.innerHTML = `
-        <div class="card text-secondary" style="padding: 40px; text-align: center;">
+        <div class="empty-state">
           <p>還沒有文章。</p>
           <p style="margin-top: 8px;"><a href="/admin/new">寫第一篇 →</a></p>
         </div>`;
       return;
     }
 
-    // Render articles
-    const articlesHtml = articles.map(article => `
-      <a href="/post/${article.slug}" class="card" style="display: block; text-decoration: none; margin-bottom: 16px;">
-        ${article.category ? `<span style="font-size: 12px; color: ${article.category.color};">${article.category.icon} ${article.category.name}</span>` : ''}
-        <h3 style="margin: 4px 0; color: var(--text);">${article.title}</h3>
-        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">${article.excerpt || ''}</p>
-        <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);">
-          ${article.published_at ? new Date(article.published_at).toLocaleDateString('zh-TW') : ''}
-          ${article.reading_time ? ` · ${article.reading_time} 分鐘閱讀` : ''}
+    const featured = articles.find(article => article.is_featured) || articles[0];
+    const latest = articles.slice(0, 18);
+    const sourceCount = articles.filter(article => article.source_url).length;
+    const topics = [
+      { label: 'AI Engineer World', count: 39, href: '/tag/agent' },
+      { label: 'Claude Code 生存指南', count: 81, href: '/tag/tooling' },
+      { label: 'AI 模型橫評', count: 271, href: '/category/ai' },
+      { label: 'AI Agent 框架', count: 124, href: '/tag/agent' },
+      { label: 'Codex CLI 深度', count: 306, href: '/tag/tooling' },
+      { label: '多模態 AI 精讀', count: 12, href: '/archive' },
+    ];
+
+    const articlesHtml = latest.map(article => `
+      <article class="aj-post">
+        ${article.cover_image ? `<a href="/post/${article.slug}" class="aj-post-cover"><img src="${escapeAttr(article.cover_image)}" alt="${escapeAttr(article.title)}" /></a>` : `<a href="/post/${article.slug}" class="aj-post-cover aj-post-cover-fallback"><span>${article.category?.icon || 'AI'}</span></a>`}
+        <div class="aj-post-body">
+          <div class="aj-post-meta">
+            ${article.category ? `<a href="/category/${article.category.slug}" class="tag" style="background: ${article.category.color}22; color: ${article.category.color}; border-bottom: none;">${article.category.icon || ''} ${escapeHtml(article.category.name)}</a>` : ''}
+            <time>${formatDate(article.published_at)}</time>
+            <span>${sourceName(article)}</span>
+          </div>
+          <h2><a href="/post/${article.slug}">${escapeHtml(article.title)}</a></h2>
+          <p>${escapeHtml(article.excerpt || '')}</p>
+          <div class="aj-post-footer">
+            <span>閱讀 ${article.reading_time || 1} 分鐘</span>
+            <span>${article.view_count || 0} 次瀏覽</span>
+            ${article.source_url ? `<a href="${escapeAttr(article.source_url)}" target="_blank" rel="noopener">原文連結</a>` : ''}
+          </div>
         </div>
-      </a>
+      </article>
     `).join('');
 
-    // Render categories sidebar
     const categoriesHtml = categories.length > 0
       ? categories.map(cat => `
-          <a href="/category/${cat.slug}" style="display: flex; align-items: center; gap: 8px; padding: 6px 0; color: var(--text-secondary); text-decoration: none; font-size: 14px;">
+          <a href="/category/${cat.slug}" class="channel-pill">
             <span>${cat.icon}</span>
-            <span>${cat.name}</span>
-            <span style="margin-left: auto; font-size: 12px; color: var(--text-muted);">${cat.article_count || 0}</span>
+            <span>${escapeHtml(cat.name)}</span>
+            <strong>${cat.article_count || 0}</strong>
           </a>
         `).join('')
-      : '<p style="color: var(--text-muted); font-size: 14px;">尚無分類</p>';
+      : '<p class="text-muted" style="font-size: 14px;">尚無分類</p>';
 
     container.innerHTML = `
-      <section style="margin-bottom: 32px;">
-        <h2 style="font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border);">
-          最新文章
-        </h2>
+      <section class="aj-ad-strip">
+        <a href="/about">OpenClaw 自動進料 · 工程判讀 · 來源留痕</a>
+        <a href="/rss.xml">RSS 訂閱本站更新</a>
+        <a href="https://3mi.ai" target="_blank" rel="noopener">Sammy Lin / 3mi.ai</a>
+      </section>
+
+      <section class="aj-topic-rail">
+        ${topics.map(topic => `<a href="${topic.href}"><strong>${topic.count}</strong><span>${topic.label}</span></a>`).join('')}
+      </section>
+
+      <section class="aj-today" id="must-read">
+        <a href="/post/${featured.slug}" class="aj-today-main">
+          <span>今日觀點：</span>
+          <h2>${escapeHtml(featured.title)}</h2>
+          <p>${escapeHtml(featured.excerpt || '')}</p>
+          <small>${formatDate(featured.published_at)} · ${featured.category?.name || 'AI'} · ${sourceName(featured)}</small>
+        </a>
+        <div class="aj-meter">
+          <h3>OpenClaw · 內容流水線</h3>
+          <div class="aj-meter-grid">
+            <div><strong>${articles.length}</strong><span>文章</span></div>
+            <div><strong>${sourceCount}</strong><span>來源</span></div>
+            <div><strong>${categories.length}</strong><span>頻道</span></div>
+            <div><strong>${new Date().getDate()}</strong><span>今日</span></div>
+          </div>
+          <p>只收會影響工具選型、架構設計、成本、安全的訊號。</p>
+        </div>
+      </section>
+
+      <section class="channel-strip">${categoriesHtml}</section>
+
+      <section class="section-block" id="latest">
+        <div class="section-heading">
+          <h2>最新發布</h2>
+          <a href="/archive">文章存檔</a>
+        </div>
         <div>${articlesHtml}</div>
       </section>
-      <aside>
-        <h2 style="font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border);">
-          分類
-        </h2>
-        ${categoriesHtml}
-      </aside>
     `;
   } catch (err) {
     console.error('Failed to load home data:', err);
@@ -83,4 +127,47 @@ async function loadHome() {
 }
 
 loadHome();
+
+function formatDate(value) {
+  if (!value) return '';
+  return new Date(value).toLocaleDateString('zh-TW');
+}
+
+function formatDay(value) {
+  if (!value) return '--';
+  return String(new Date(value).getDate()).padStart(2, '0');
+}
+
+function formatMonth(value) {
+  if (!value) return '';
+  return new Date(value).toLocaleDateString('zh-TW', { month: 'short' });
+}
+
+function sourceName(article) {
+  return article.source_type ? article.source_type : '本站筆記';
+}
+
+function whyRead(article) {
+  const category = article.category?.slug || '';
+  if (category === 'security') return '可能影響資料隔離、權限與企業導入風險。';
+  if (category === 'architecture') return '可作為系統設計、平台治理或雲端架構參考。';
+  if (category === 'tools') return '可能改變日常開發工具鏈與團隊效率。';
+  if (category === 'tutorial') return '可直接轉成實作步驟或內部教學。';
+  if (article.source_url) return '有原文可追，適合快速判斷是否值得深讀。';
+  return '整理成工程筆記，適合快速補上下文。';
+}
+
+function escapeHtml(s) {
+  if (typeof s !== 'string') return '';
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeAttr(s) {
+  return escapeHtml(s).replace(/`/g, '&#96;');
+}
 </script>

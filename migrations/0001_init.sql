@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS articles (
   content_md TEXT NOT NULL,
   content_html TEXT,
   cover_image TEXT,
+  source_url TEXT,
+  source_type TEXT,
   category_id INTEGER,
   status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
   is_featured INTEGER DEFAULT 0,

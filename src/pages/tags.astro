@@ -3,9 +3,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout title="標籤雲" description="所有標籤">
-  <header style="margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--border);">
-    <h1 style="font-size: 28px;">標籤雲</h1>
-    <p class="text-secondary" style="margin-top: 8px;">共 <span id="tag-count">...</span> 個標籤</p>
+  <header class="collection-header">
+    <p class="eyebrow">Topics</p>
+    <h1>標籤雲</h1>
+    <p>用主題快速回看文章，共 <span id="tag-count">...</span> 個標籤。</p>
   </header>
 
   <div id="tags-content">
@@ -48,10 +49,10 @@ async function loadTags() {
     }
 
     container.innerHTML = `
-      <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+      <div class="topic-cloud">
         ${tags.map(tag => `
-          <a href="/tag/${tag.slug}" class="tag" style="padding: 8px 16px; font-size: 14px; text-decoration: none;">
-            #${tag.name} <span class="text-muted" style="margin-left: 4px;">(${tag.count})</span>
+          <a href="/tag/${tag.slug}">
+            #${tag.name} <span>${tag.count}</span>
           </a>
         `).join('')}
       </div>`;

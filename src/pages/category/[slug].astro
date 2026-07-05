@@ -19,9 +19,10 @@ const { slug } = Astro.params;
 ---
 
 <BaseLayout title="分類" description="">
-  <header style="margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--border);">
-    <h1 style="font-size: 28px;" id="category-title">分類</h1>
-    <p class="text-secondary" style="margin-top: 8px;" id="category-description"></p>
+  <header class="collection-header">
+    <p class="eyebrow">Channel</p>
+    <h1 id="category-title">分類</h1>
+    <p id="category-description"></p>
   </header>
 
   <div id="articles-container">
@@ -68,17 +69,17 @@ async function loadCategory() {
       return;
     }
 
-    container.innerHTML = filteredArticles.map((article) => `
-      <a href="/post/${article.slug}" class="card" style="display: block; text-decoration: none; margin-bottom: 16px; padding: 16px;">
-        ${article.category ? `<span style="font-size: 12px; color: ${article.category.color};">${article.category.name}</span>` : ''}
-        <h3 style="margin: 4px 0; color: var(--text);">${escapeHtml(article.title)}</h3>
-        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">${escapeHtml(article.excerpt || '')}</p>
-        <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);">
-          ${article.published_at ? new Date(article.published_at).toLocaleDateString('zh-TW') : ''}
-          ${article.reading_time ? ` · ${article.reading_time} 分鐘閱讀` : ''}
+    container.innerHTML = `<div class="collection-list">` + filteredArticles.map((article) => `
+      <a href="/post/${article.slug}" class="collection-card">
+        <div class="collection-card-meta">
+          ${article.category ? `<span style="color: ${article.category.color};">${escapeHtml(article.category.name)}</span>` : ''}
+          <time>${article.published_at ? new Date(article.published_at).toLocaleDateString('zh-TW') : ''}</time>
+          <span>${article.reading_time || 1} 分鐘</span>
         </div>
+        <h3>${escapeHtml(article.title)}</h3>
+        <p>${escapeHtml(article.excerpt || '')}</p>
       </a>
-    `).join('');
+    `).join('') + `</div>`;
   } catch (err) {
     console.error('Failed to load category:', err);
     container.innerHTML = '<div class="card text-secondary" style="padding: 40px; text-align: center;">載入失敗。</div>';

@@ -33,6 +33,17 @@ const D1_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
 const BRAVE_KEY = process.env.BRAVE_API_KEY;
 const D1_BASE = `${D1_API}/accounts/${ACCOUNT_ID}/d1/database/${DATABASE_ID}`;
 
+const SOURCE_LABELS = {
+  hackernews: 'Hacker News',
+  simonwillison: 'Simon Willison',
+  cloudflare: 'Cloudflare Blog',
+  anthropic: 'Anthropic News',
+  openai: 'OpenAI News',
+  cursor: 'Cursor Blog',
+  brave: 'Brave Search',
+  twitter: 'Twitter/X',
+};
+
 // RSS sources
 const RSS_SOURCES = [
   { url: 'https://hnrss.org/newest?q=AI+OR+LLM+OR+Claude+OR+GPT&count=20', source: 'hackernews', category: 1 },
@@ -180,7 +191,31 @@ async function summarizeItem(item) {
   return {
     title_zh: isChinese ? item.original_title : `[EN] ${item.original_title.slice(0, 80)}`,
     excerpt_zh: summary,
+    core_view: isChinese
+      ? `${item.source} 這則更新值得追蹤，重點在產品能力、開發者工作流或 AI 基礎設施的變化。`
+      : `這則 ${item.source} 更新值得追蹤，重點在產品能力、開發者工作流或 AI 基礎設施的變化。`,
   };
+}
+
+function buildContentMarkdown(item, summary) {
+  const originalExcerpt = item.original_excerpt || summary.excerpt_zh;
+  return [
+    `> 本文由 OpenClaw 自動抓取來源後整理，保留原文連結，供快速判讀與後續人工補充。`,
+    '',
+    '## 事件摘要',
+    '',
+    summary.excerpt_zh,
+    '',
+    '## 事件分析',
+    '',
+    summary.core_view,
+    '',
+    '## 原始內容',
+    '',
+    originalExcerpt,
+    '',
+    `原文連結：${item.original_url}`,
+  ].join('\n');
 }
 
 async function d1Execute(sql, params = []) {
@@ -235,14 +270,14 @@ async function insertItem(item, summary) {
     slug,
     summary.title_zh,
     summary.excerpt_zh.slice(0, 280),
-    item.original_excerpt || summary.excerpt_zh,
+    buildContentMarkdown(item, summary),
     null, // content_html will be generated client-side or in app
     item.category_id || 1,
     'published',
     0,
     item.published_at,
     item.original_url,
-    item.source,
+    SOURCE_LABELS[item.source] || item.source,
   ];
   return d1Execute(sql, params);
 }

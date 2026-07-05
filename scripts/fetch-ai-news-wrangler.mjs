@@ -32,6 +32,12 @@ const RSS_SOURCES = [
   { url: 'https://hnrss.org/newest?q=AI+OR+LLM+OR+Claude&count=15', source: 'hackernews', category: 1 },
 ];
 
+const SOURCE_LABELS = {
+  hackernews: 'Hacker News',
+  simonwillison: 'Simon Willison',
+  cloudflare: 'Cloudflare Blog',
+};
+
 function stripHtml(s) {
   return (s || '')
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
@@ -99,7 +105,29 @@ function summarizeItem(item) {
   return {
     title_zh: isChinese ? item.original_title.slice(0, 80) : item.original_title.slice(0, 80),
     excerpt_zh: isChinese ? summary : summary,
+    core_view: `${item.source} 這則更新值得追蹤，重點在產品能力、開發者工作流或 AI 基礎設施的變化。`,
   };
+}
+
+function buildContentMarkdown(item, summary) {
+  const originalExcerpt = item.original_excerpt || item.original_title;
+  return [
+    '> 本文由 OpenClaw 自動抓取來源後整理，保留原文連結，供快速判讀與後續人工補充。',
+    '',
+    '## 事件摘要',
+    '',
+    summary.excerpt_zh,
+    '',
+    '## 事件分析',
+    '',
+    summary.core_view,
+    '',
+    '## 原始內容',
+    '',
+    originalExcerpt,
+    '',
+    `原文連結：${item.original_url}`,
+  ].join('\n');
 }
 
 function execWrangler(sql) {
@@ -142,10 +170,11 @@ async function main() {
     const titleEsc = summary.title_zh.replace(/'/g, "''");
     const excerptEsc = summary.excerpt_zh.replace(/'/g, "''");
     const urlEsc = item.original_url.replace(/'/g, "''");
-    const excerptMdEsc = item.original_excerpt.replace(/'/g, "''");
+    const excerptMdEsc = buildContentMarkdown(item, summary).replace(/'/g, "''");
     const pubAt = item.published_at.replace(/'/g, "''");
 
-    const sql = `INSERT OR IGNORE INTO articles (slug, title, excerpt, content_md, content_html, category_id, status, is_featured, published_at, source_url, source_type) VALUES ('${slug}', '${titleEsc}', '${excerptEsc}', '${excerptMdEsc}', NULL, ${item.category_id}, 'published', 0, '${pubAt}', '${urlEsc}', '${item.source}')`;
+    const sourceLabel = (SOURCE_LABELS[item.source] || item.source).replace(/'/g, "''");
+    const sql = `INSERT OR IGNORE INTO articles (slug, title, excerpt, content_md, content_html, category_id, status, is_featured, published_at, source_url, source_type) VALUES ('${slug}', '${titleEsc}', '${excerptEsc}', '${excerptMdEsc}', NULL, ${item.category_id}, 'published', 0, '${pubAt}', '${urlEsc}', '${sourceLabel}')`;
 
     if (DRY_RUN) {
       console.log(`[DRY] ${item.source}: ${summary.title_zh.slice(0, 60)}`);

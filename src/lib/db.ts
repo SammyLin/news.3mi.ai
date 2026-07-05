@@ -12,6 +12,8 @@ export interface Article {
   content_md: string;
   content_html: string | null;
   cover_image: string | null;
+  source_url: string | null;
+  source_type: string | null;
   category_id: number | null;
   status: 'draft' | 'published';
   is_featured: number;
@@ -85,6 +87,8 @@ export async function listPublishedArticles(
     content_md: r.content_md,
     content_html: r.content_html,
     cover_image: r.cover_image,
+    source_url: r.source_url,
+    source_type: r.source_type,
     category_id: r.category_id,
     status: r.status,
     is_featured: r.is_featured,
@@ -131,6 +135,8 @@ export async function getFeaturedArticle(db: D1Database): Promise<ArticleWithMet
     content_md: r.content_md,
     content_html: r.content_html,
     cover_image: r.cover_image,
+    source_url: r.source_url,
+    source_type: r.source_type,
     category_id: r.category_id,
     status: r.status,
     is_featured: r.is_featured,
@@ -176,6 +182,8 @@ export async function getArticleBySlug(db: D1Database, slug: string): Promise<Ar
     content_md: r.content_md,
     content_html: r.content_html,
     cover_image: r.cover_image,
+    source_url: r.source_url,
+    source_type: r.source_type,
     category_id: r.category_id,
     status: r.status,
     is_featured: r.is_featured,
@@ -260,6 +268,8 @@ export async function listAllArticles(db: D1Database): Promise<ArticleWithMeta[]
     content_md: r.content_md,
     content_html: r.content_html,
     cover_image: r.cover_image,
+    source_url: r.source_url,
+    source_type: r.source_type,
     category_id: r.category_id,
     status: r.status,
     is_featured: r.is_featured,
@@ -291,6 +301,8 @@ export async function createArticle(
     content_md: string;
     content_html?: string;
     cover_image?: string;
+    source_url?: string;
+    source_type?: string;
     category_id?: number;
     status?: 'draft' | 'published';
     is_featured?: number;
@@ -300,8 +312,8 @@ export async function createArticle(
 ): Promise<number> {
   const now = new Date().toISOString();
   const result = await db.prepare(`
-    INSERT INTO articles (slug, title, excerpt, content_md, content_html, cover_image, category_id, status, is_featured, reading_time, published_at, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO articles (slug, title, excerpt, content_md, content_html, cover_image, source_url, source_type, category_id, status, is_featured, reading_time, published_at, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     data.slug,
     data.title,
@@ -309,6 +321,8 @@ export async function createArticle(
     data.content_md,
     data.content_html || null,
     data.cover_image || null,
+    data.source_url || null,
+    data.source_type || null,
     data.category_id || null,
     data.status || 'draft',
     data.is_featured || 0,
@@ -338,6 +352,8 @@ export async function updateArticle(
     content_md?: string;
     content_html?: string;
     cover_image?: string;
+    source_url?: string;
+    source_type?: string;
     category_id?: number;
     status?: 'draft' | 'published';
     is_featured?: number;
@@ -355,6 +371,8 @@ export async function updateArticle(
     content_md: data.content_md,
     content_html: data.content_html,
     cover_image: data.cover_image,
+    source_url: data.source_url,
+    source_type: data.source_type,
     category_id: data.category_id,
     status: data.status,
     is_featured: data.is_featured,

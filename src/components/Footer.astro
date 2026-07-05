@@ -4,10 +4,18 @@ const year = new Date().getFullYear();
 
 <footer class="site-footer">
   <div class="container">
-    <p>
-      © {year} news.3mi.ai · 由 <a href="https://3mi.ai" target="_blank" rel="noopener">3mi.ai</a> 維護 ·
-      <a href="/rss.xml">RSS</a> ·
-      <a href="/about">關於</a>
-    </p>
+    <div class="footer-grid">
+      <div>
+        <strong>news.3mi.ai</strong>
+        <p>AI 工程訊號、架構判讀、工具觀察。由 <a href="https://3mi.ai" target="_blank" rel="noopener">Sammy Lin</a> 維護。</p>
+      </div>
+      <nav>
+        <a href="/rss.xml">RSS</a>
+        <a href="/archive">Archive</a>
+        <a href="/about">About</a>
+        <a href="/admin">Admin</a>
+      </nav>
+    </div>
+    <p class="footer-small">© {year} news.3mi.ai</p>
   </div>
 </footer>

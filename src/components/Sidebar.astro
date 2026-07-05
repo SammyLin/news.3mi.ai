@@ -11,18 +11,38 @@ const pathname = Astro.url.pathname;
 {position === 'left' && (
   <>
     <div class="sidebar-section">
-      <h3>分類</h3>
+      <h3>分類導航</h3>
       <ul class="sidebar-nav" id="sidebar-categories">
         <li><span class="text-muted" style="padding: 8px 12px; display: block;">載入中...</span></li>
       </ul>
     </div>
 
     <div class="sidebar-section">
-      <h3>訂閱</h3>
+      <h3>站內入口</h3>
       <ul class="sidebar-nav">
+        <li><a href="/archive">文章存檔</a></li>
+        <li><a href="/tags">標籤雲</a></li>
         <li><a href="/rss.xml">RSS Feed</a></li>
-        <li><a href="/sitemap-index.xml">Sitemap</a></li>
+        <li><a href="/about">關於本站</a></li>
       </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>前沿哨所</h3>
+      <div class="outpost-list" id="sidebar-outpost">
+        <article>
+          <h4>Agent 進入生產環境，重點不再是 demo</h4>
+          <p>長週期任務、eval、memory、tool use 會決定工具是否可靠。</p>
+          <span>持續追蹤</span>
+        </article>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>標籤雲</h3>
+      <div class="sidebar-tag-cloud" id="sidebar-tags">
+        <span class="text-muted">載入中...</span>
+      </div>
     </div>
   </>
 )}
@@ -30,21 +50,30 @@ const pathname = Astro.url.pathname;
 {position === 'right' && (
   <>
     <div class="sidebar-section">
-      <h3>🚀 快速連結</h3>
-      <ul class="sidebar-nav">
-        <li><a href="https://github.com/the3mi" target="_blank" rel="noopener">GitHub</a></li>
-        <li><a href="https://3mi.ai" target="_blank" rel="noopener">3mi.ai 主站</a></li>
+      <h3>置頂推薦</h3>
+      <ol class="rank-list" id="sidebar-featured">
+        <li><span class="text-muted" style="padding: 8px 12px; display: block;">載入中...</span></li>
+      </ol>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>OpenClaw 來源</h3>
+      <ul class="source-list source-links">
+        <li><a href="https://news.ycombinator.com/" target="_blank" rel="noopener">Hacker News</a></li>
+        <li><a href="https://www.v2ex.com/" target="_blank" rel="noopener">V2EX</a></li>
+        <li><a href="https://linux.do/" target="_blank" rel="noopener">Linux.do</a></li>
+        <li><a href="https://openai.com/news/" target="_blank" rel="noopener">OpenAI News</a></li>
+        <li><a href="https://www.anthropic.com/news" target="_blank" rel="noopener">Anthropic News</a></li>
+        <li><a href="https://blog.cloudflare.com/" target="_blank" rel="noopener">Cloudflare Blog</a></li>
       </ul>
     </div>
 
-    <div class="sidebar-section card">
-      <h3>💡 關於本站</h3>
-      <p class="text-secondary" style="font-size: 13px; line-height: 1.6;">
-        這是 Sammy 的 AI 工程筆記站。內容涵蓋 LLM 工具評測、Agent 架構、雲端部署經驗等。
+    <div class="sidebar-section mini-profile">
+      <h3>關於本站</h3>
+      <p>
+        Sammy Lin 的 AI 工程情報筆記。OpenClaw 進內容，本站做事件摘要、工程判讀、來源留痕。
       </p>
-      <p class="text-muted" style="font-size: 12px; margin-top: 12px;">
-        Powered by Astro + Cloudflare Pages
-      </p>
+      <a href="https://3mi.ai" target="_blank" rel="noopener">3mi.ai</a>
     </div>
   </>
 )}
@@ -65,8 +94,8 @@ const pathname = Astro.url.pathname;
         const isActive = pathname === '/category/' + cat.slug || pathname === '/category/' + cat.slug + '/';
         return '<li>' +
           '<a href="/category/' + cat.slug + '"' + (isActive ? ' class="active"' : '') + '>' +
-            '<span>' + + '</span>' +
-            '<span>' + cat.name + '</span>' +
+            '<span>' + (cat.icon || '') + '</span>' +
+            '<span>' + escapeHtml(cat.name) + '</span>' +
             (cat.article_count > 0 ? '<span class="text-muted" style="margin-left:auto;font-size:12px;">' + cat.article_count + '</span>' : '') +
           '</a>' +
         '</li>';
@@ -75,4 +104,79 @@ const pathname = Astro.url.pathname;
       list.innerHTML = '<li><span class="text-muted" style="padding: 8px 12px; display: block;">載入失敗</span></li>';
     }
   })();
+
+  (async () => {
+    const list = document.getElementById('sidebar-featured');
+    if (!list) return;
+    try {
+      const res = await fetch('/api/articles');
+      const { articles = [] } = await res.json();
+      const picked = articles.filter((article) => article.is_featured).slice(0, 6);
+      const fallback = picked.length ? picked : articles.slice(0, 8);
+      if (fallback.length === 0) {
+        list.innerHTML = '<li><span class="text-muted" style="padding: 8px 12px; display: block;">尚無推薦</span></li>';
+        return;
+      }
+      list.innerHTML = fallback.map((article, index) => {
+        const date = article.published_at ? new Date(article.published_at).toLocaleDateString('zh-TW') : '';
+        return '<li><a href="/post/' + article.slug + '">' +
+          '<b>' + String(index + 1).padStart(2, '0') + '</b>' +
+          '<span><strong>' + escapeHtml(article.title) + '</strong><small>' + date + '</small></span>' +
+        '</a></li>';
+      }).join('');
+    } catch (e) {
+      list.innerHTML = '<li><span class="text-muted" style="padding: 8px 12px; display: block;">載入失敗</span></li>';
+    }
+  })();
+
+  (async () => {
+    const outpost = document.getElementById('sidebar-outpost');
+    const tagsEl = document.getElementById('sidebar-tags');
+    if (!outpost && !tagsEl) return;
+    try {
+      const res = await fetch('/api/articles');
+      const { articles = [] } = await res.json();
+
+      if (outpost && articles.length > 0) {
+        outpost.innerHTML = articles.slice(0, 3).map((article) => {
+          const source = article.source_type || article.category?.name || '本站';
+          const sourceLink = article.source_url
+            ? '<a href="' + escapeAttr(article.source_url) + '" target="_blank" rel="noopener">' + escapeHtml(source) + '</a>'
+            : '<span>' + escapeHtml(source) + '</span>';
+          return '<article>' +
+            '<h4><a href="/post/' + article.slug + '">' + escapeHtml(article.title) + '</a></h4>' +
+            '<p>' + escapeHtml(article.excerpt || '事件摘要待補。') + '</p>' +
+            sourceLink +
+          '</article>';
+        }).join('');
+      }
+
+      if (tagsEl) {
+        const tagMap = new Map();
+        for (const article of articles) {
+          for (const tag of article.tags || []) {
+            const current = tagMap.get(tag.slug) || { name: tag.name, count: 0 };
+            current.count += 1;
+            tagMap.set(tag.slug, current);
+          }
+        }
+        const tags = Array.from(tagMap.entries()).slice(0, 14);
+        tagsEl.innerHTML = tags.length
+          ? tags.map(([slug, tag]) => '<a href="/tag/' + slug + '">#' + escapeHtml(tag.name) + '<span>' + tag.count + '</span></a>').join('')
+          : '<span class="text-muted">尚無標籤</span>';
+      }
+    } catch (e) {
+      if (outpost) outpost.innerHTML = '<p class="text-muted">載入失敗</p>';
+      if (tagsEl) tagsEl.innerHTML = '<span class="text-muted">載入失敗</span>';
+    }
+  })();
+
+  function escapeHtml(s) {
+    if (typeof s !== 'string') return '';
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function escapeAttr(s) {
+    return escapeHtml(s).replace(/`/g, '&#96;');
+  }
 </script>

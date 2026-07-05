@@ -78,6 +78,8 @@ export const POST: APIRoute = async (context) => {
     content_md: contentMd,
     content_html: contentHtml,
     cover_image: body.cover_image,
+    source_url: body.source_url,
+    source_type: body.source_type,
     category_id: body.category_id,
     status: body.status || 'draft',
     is_featured: body.is_featured ? 1 : 0,

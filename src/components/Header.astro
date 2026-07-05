@@ -2,8 +2,15 @@
 const pathname = Astro.url.pathname;
 const nav = [
   { href: '/', label: '首頁' },
-  { href: '/archive', label: '文章' },
-  { href: '/tags', label: '標籤' },
+  { href: '/category/ai', label: 'AI' },
+  { href: '/archive', label: '前沿' },
+  { href: '/tags', label: '專題' },
+  { href: '/category/architecture', label: '架構' },
+  { href: '/category/tutorial', label: '實戰' },
+  { href: '/category/security', label: '安全' },
+  { href: '/category/life', label: '生活' },
+  { href: '/category/tools', label: '工具' },
+  { href: '/archive', label: '存檔' },
   { href: '/about', label: '關於' },
 ];
 ---
@@ -11,14 +18,14 @@ const nav = [
 <header class="site-header">
   <div class="container">
     <a href="/" class="site-logo">
-      <span>news.3mi.ai</span>
-      <span class="tag">AI 工程筆記</span>
+      <span class="logo-mark">&gt; 3mi _</span>
+      <span class="logo-title">port:3MI AI Signal</span>
+      <span class="tag">AI 重度工程筆記</span>
     </a>
     <nav class="site-nav">
       {nav.map((item) => (
-        <a href={item.href} class={pathname === item.href ? 'active' : ''}>{item.label}</a>
+        <a href={item.href} class={pathname === item.href || pathname.startsWith(`${item.href}/`) ? 'active' : ''}>{item.label}</a>
       ))}
-      <a href="/admin" class={pathname.startsWith('/admin') ? 'active' : ''}>後台</a>
     </nav>
   </div>
 </header>

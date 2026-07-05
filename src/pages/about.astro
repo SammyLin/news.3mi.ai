@@ -2,35 +2,23 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="關於" description="關於 news.3mi.ai">
-  <article class="prose">
-    <h1>👋 關於 news.3mi.ai</h1>
-    <p>這是 Sammy 的個人 AI 工程筆記站。</p>
+<BaseLayout title="關於" description="關於 news.3mi.ai" showSidebars={false}>
+  <article class="prose about-page">
+    <p class="eyebrow">About</p>
+    <h1>不是新聞堆疊，是工程判讀。</h1>
+    <p class="lead">news.3mi.ai 追蹤 AI 工具、Agent 架構、雲端平台與安全事件。OpenClaw 負責進料，本站把資料整理成能幫工程師做決策的短文。</p>
 
-    <h2>寫什麼？</h2>
+    <h2>本站關心什麼</h2>
     <ul>
-      <li><strong>AI / LLM 工具評測</strong> — Claude Code、Cursor、各家模型橫評</li>
-      <li><strong>架構設計</strong> — 雲原生、AI Agent 系統、Edge Computing</li>
-      <li><strong>實戰教學</strong> — 從零到一部署、踩坑紀錄</li>
-      <li><strong>安全</strong> — 資安觀察、防呆設計</li>
-      <li><strong>生活</strong> — 工程師職涯、遠距工作</li>
+      <li><strong>工具是否改變工作流</strong>：Claude Code、Cursor、模型 API、Agent IDE。</li>
+      <li><strong>架構是否值得借鏡</strong>：長任務 agent、eval、memory、部署拓樸。</li>
+      <li><strong>成本與風險是否變動</strong>：推理成本、雲端帳單、安全隔離、供應商策略。</li>
     </ul>
 
-    <h2>技術棧</h2>
-    <ul>
-      <li>Astro（靜態站生成）</li>
-      <li>Cloudflare Pages（CDN 部署）</li>
-      <li>Cloudflare D1（SQLite 資料庫）</li>
-      <li>Cloudflare R2（圖片儲存）</li>
-    </ul>
-
-    <h2>聯絡</h2>
-    <ul>
-      <li>GitHub: <a href="https://github.com/the3mi" target="_blank" rel="noopener">@the3mi</a></li>
-      <li>主站: <a href="https://3mi.ai" target="_blank" rel="noopener">3mi.ai</a></li>
-    </ul>
+    <h2>誰在維護</h2>
+    <p>Sammy Lin，AI Technical Architect。做過 SRE、平台工程、多雲架構、FinOps、企業 AI 導入。主站在 <a href="https://3mi.ai" target="_blank" rel="noopener">3mi.ai</a>。</p>
 
     <h2>訂閱</h2>
-    <p>透過 <a href="/rss.xml">RSS Feed</a> 訂閱本站更新。</p>
+    <p>使用 <a href="/rss.xml">RSS Feed</a> 追蹤更新。</p>
   </article>
 </BaseLayout>
