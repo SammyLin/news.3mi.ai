@@ -1,7 +1,10 @@
 import type { APIRoute } from 'astro';
 import {
   listAllArticles,
+  listPublishedArticles,
+  countPublishedArticles,
   getArticleBySlug,
+  getFeaturedArticle,
   createArticle,
   updateArticle,
   deleteArticle,
@@ -23,6 +26,11 @@ function ensureHtml<T extends { content_md: string; content_html: string | null 
   return a;
 }
 
+function summarizeArticle<T extends { content_md?: string; content_html?: string | null }>(article: T) {
+  const { content_md: _contentMd, content_html: _contentHtml, ...summary } = article;
+  return summary;
+}
+
 export const prerender = false;
 
 const getEnv = (context: any) => context.locals.runtime?.env || context.locals.cloudflare?.env || context.locals.env || {};
@@ -40,11 +48,12 @@ const getDBLocal = (context: any) => {
 export const GET: APIRoute = async (context) => {
   const db = getDBLocal(context);
   const url = new URL(context.request.url);
+  const env = getEnv(context);
 
   const slug = url.searchParams.get('slug');
   if (slug) {
     const article = await getArticleBySlug(db, slug);
-    if (!article) {
+    if (!article || article.status !== 'published') {
       return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
     }
     return new Response(JSON.stringify({ article: ensureHtml(article) }), {
@@ -52,11 +61,48 @@ export const GET: APIRoute = async (context) => {
     });
   }
 
-  const articles = (await listAllArticles(db)).map(ensureHtml);
-  return new Response(JSON.stringify({ articles }), {
+  const scope = url.searchParams.get('scope');
+  if (scope === 'admin') {
+    if (!(await isAuthenticated(context.request, env.JWT_SECRET || 'fallback-secret'))) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    }
+    const articles = (await listAllArticles(db)).map(summarizeArticle);
+    return new Response(JSON.stringify({ articles }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (url.searchParams.get('featured') === '1') {
+    const article = await getFeaturedArticle(db);
+    return new Response(JSON.stringify({ articles: article ? [summarizeArticle(article)] : [] }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const page = clampInt(url.searchParams.get('page'), 1, 1, 9999);
+  const limit = clampInt(url.searchParams.get('limit'), 12, 1, 100);
+  const categorySlug = url.searchParams.get('category') || undefined;
+  const tagSlug = url.searchParams.get('tag') || undefined;
+  const offset = (page - 1) * limit;
+  const total = await countPublishedArticles(db, { categorySlug, tagSlug });
+  const sourceCount = await countPublishedArticles(db, { withSource: true });
+  const articles = (await listPublishedArticles(db, { categorySlug, tagSlug, limit, offset })).map(summarizeArticle);
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+
+  return new Response(JSON.stringify({
+    articles,
+    pagination: { page, limit, total, totalPages },
+    sourceCount,
+  }), {
     headers: { 'Content-Type': 'application/json' },
   });
 };
+
+function clampInt(value: string | null, fallback: number, min: number, max: number) {
+  const parsed = Number(value || fallback);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(Math.max(Math.floor(parsed), min), max);
+}
 
 export const POST: APIRoute = async (context) => {
   const env = getEnv(context);

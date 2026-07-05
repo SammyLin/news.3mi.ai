@@ -110,6 +110,35 @@ export async function listPublishedArticles(
   }));
 }
 
+/** 計算發佈文章數 */
+export async function countPublishedArticles(
+  db: D1Database,
+  opts: { categorySlug?: string; tagSlug?: string; withSource?: boolean } = {}
+): Promise<number> {
+  let sql = `
+    SELECT COUNT(*) as count
+    FROM articles a
+    LEFT JOIN categories c ON a.category_id = c.id
+    WHERE a.status = 'published'
+  `;
+  const params: any[] = [];
+
+  if (opts.categorySlug) {
+    sql += ` AND c.slug = ?`;
+    params.push(opts.categorySlug);
+  }
+  if (opts.tagSlug) {
+    sql += ` AND a.id IN (SELECT at.article_id FROM article_tags at JOIN tags t ON at.tag_id = t.id WHERE t.slug = ?)`;
+    params.push(opts.tagSlug);
+  }
+  if (opts.withSource) {
+    sql += ` AND a.source_url IS NOT NULL AND a.source_url != ''`;
+  }
+
+  const result = await db.prepare(sql).bind(...params).first();
+  return Number((result as any)?.count || 0);
+}
+
 /** 取得焦點文章 */
 export async function getFeaturedArticle(db: D1Database): Promise<ArticleWithMeta | null> {
   const result = await db.prepare(`

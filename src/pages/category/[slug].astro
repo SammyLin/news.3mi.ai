@@ -44,51 +44,56 @@ async function loadCategory() {
   if (!container) return;
 
   try {
+    const pageSize = 10;
     const [categoriesRes, articlesRes] = await Promise.all([
       fetch('/api/categories'),
-      fetch('/api/articles'),
+      fetchCollectionPage(slug, getPageFromUrl(), pageSize),
     ]);
 
     const { categories = [] } = await categoriesRes.json();
-    const { articles = [] } = await articlesRes.json();
+    const { articles = [], pagination = {} } = await articlesRes.json();
 
     const category = categories.find((c) => c.slug === slug);
-    const filteredArticles = articles.filter((a) => a.category?.slug === slug);
 
     if (category) {
       document.title = `${category.name} — news.3mi.ai`;
       if (titleEl) titleEl.textContent = `${category.name}`;
-      if (descEl) descEl.textContent = category.description || '';
+      if (descEl) descEl.textContent = `${category.description || ''} 共 ${pagination.total || articles.length} 篇。`;
     } else {
       if (titleEl) titleEl.textContent = '找不到分類';
     }
 
-    if (filteredArticles.length === 0) {
+    if (articles.length === 0) {
       container.innerHTML = '<div class="card text-secondary" style="padding: 40px; text-align: center;">這個分類還沒有文章。</div>';
       return;
     }
 
-    renderCollection(filteredArticles, getPageFromUrl(), 10, container, '分類文章分頁');
+    renderCollection(slug, articles, pagination, pageSize, container, '分類文章分頁');
   } catch (err) {
     console.error('Failed to load category:', err);
     container.innerHTML = '<div class="card text-secondary" style="padding: 40px; text-align: center;">載入失敗。</div>';
   }
 }
 
-function renderCollection(articles, page, pageSize, container, label) {
-  const totalPages = Math.max(1, Math.ceil(articles.length / pageSize));
-  const safePage = Math.min(Math.max(page, 1), totalPages);
-  const start = (safePage - 1) * pageSize;
-  const pageArticles = articles.slice(start, start + pageSize);
+function fetchCollectionPage(slug, page, limit) {
+  return fetch(`/api/articles?category=${encodeURIComponent(slug)}&page=${page}&limit=${limit}`);
+}
 
-  container.innerHTML = `<div class="collection-list">` + pageArticles.map(renderCollectionCard).join('') + `</div>
-    <nav class="pagination" id="collection-pagination" aria-label="${label}">${renderPagination(safePage, totalPages, articles.length)}</nav>`;
+function renderCollection(slug, articles, pageInfo, pageSize, container, label) {
+  const safePage = pageInfo.page || 1;
+  const totalPages = pageInfo.totalPages || 1;
+  const total = pageInfo.total || articles.length;
+
+  container.innerHTML = `<div class="collection-list">` + articles.map(renderCollectionCard).join('') + `</div>
+    <nav class="pagination" id="collection-pagination" aria-label="${label}">${renderPagination(safePage, totalPages, total)}</nav>`;
 
   const pagination = document.getElementById('collection-pagination');
   if (pagination) {
-    bindPagination(pagination, (nextPage) => {
+    bindPagination(pagination, async (nextPage) => {
       setPageInUrl(nextPage);
-      renderCollection(articles, nextPage, pageSize, container, label);
+      const res = await fetchCollectionPage(slug, nextPage, pageSize);
+      const data = await res.json();
+      renderCollection(slug, data.articles || [], data.pagination || {}, pageSize, container, label);
     });
   }
 }

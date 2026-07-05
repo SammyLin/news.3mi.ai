@@ -47,43 +47,45 @@ async function loadTag() {
   if (!container) return;
 
   try {
-    const res = await fetch('/api/articles');
-    const { articles = [] } = await res.json();
-
-    const filtered = articles.filter((a) =>
-      (a.tags || []).some((t) => t.slug === slug)
-    );
+    const pageSize = 10;
+    const res = await fetchCollectionPage(slug, getPageFromUrl(), pageSize);
+    const { articles = [], pagination = {} } = await res.json();
 
     document.title = `#${slug} — news.3mi.ai`;
     if (titleEl) titleEl.textContent = `#${slug}`;
-    if (countEl) countEl.textContent = String(filtered.length);
+    if (countEl) countEl.textContent = String(pagination.total || articles.length);
 
-    if (filtered.length === 0) {
+    if (articles.length === 0) {
       container.innerHTML = '<div class="card text-secondary" style="padding: 40px; text-align: center;">這個標籤還沒有文章。</div>';
       return;
     }
 
-    renderCollection(filtered, getPageFromUrl(), 10, container, '標籤文章分頁');
+    renderCollection(slug, articles, pagination, pageSize, container, '標籤文章分頁');
   } catch (err) {
     console.error('Failed to load tag:', err);
     container.innerHTML = '<div class="card text-secondary" style="padding: 40px; text-align: center;">載入失敗。</div>';
   }
 }
 
-function renderCollection(articles, page, pageSize, container, label) {
-  const totalPages = Math.max(1, Math.ceil(articles.length / pageSize));
-  const safePage = Math.min(Math.max(page, 1), totalPages);
-  const start = (safePage - 1) * pageSize;
-  const pageArticles = articles.slice(start, start + pageSize);
+function fetchCollectionPage(slug, page, limit) {
+  return fetch(`/api/articles?tag=${encodeURIComponent(slug)}&page=${page}&limit=${limit}`);
+}
 
-  container.innerHTML = `<div class="collection-list">` + pageArticles.map(renderCollectionCard).join('') + `</div>
-    <nav class="pagination" id="collection-pagination" aria-label="${label}">${renderPagination(safePage, totalPages, articles.length)}</nav>`;
+function renderCollection(slug, articles, pageInfo, pageSize, container, label) {
+  const safePage = pageInfo.page || 1;
+  const totalPages = pageInfo.totalPages || 1;
+  const total = pageInfo.total || articles.length;
+
+  container.innerHTML = `<div class="collection-list">` + articles.map(renderCollectionCard).join('') + `</div>
+    <nav class="pagination" id="collection-pagination" aria-label="${label}">${renderPagination(safePage, totalPages, total)}</nav>`;
 
   const pagination = document.getElementById('collection-pagination');
   if (pagination) {
-    bindPagination(pagination, (nextPage) => {
+    bindPagination(pagination, async (nextPage) => {
       setPageInUrl(nextPage);
-      renderCollection(articles, nextPage, pageSize, container, label);
+      const res = await fetchCollectionPage(slug, nextPage, pageSize);
+      const data = await res.json();
+      renderCollection(slug, data.articles || [], data.pagination || {}, pageSize, container, label);
     });
   }
 }

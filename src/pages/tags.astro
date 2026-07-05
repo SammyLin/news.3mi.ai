@@ -24,7 +24,7 @@ async function loadTags() {
 
   try {
     // Fetch tags from API (we need to create a tags endpoint, or use articles to build tag list)
-    const res = await fetch('/api/articles');
+    const res = await fetch('/api/articles?limit=100');
     const { articles = [] } = await res.json();
 
     // Build tag map from articles

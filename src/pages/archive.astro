@@ -23,31 +23,35 @@ async function loadArchive() {
   if (!container) return;
 
   try {
-    const res = await fetch('/api/articles');
-    const { articles = [] } = await res.json();
+    const pageSize = 10;
+    const res = await fetchArchivePage(getPageFromUrl(), pageSize);
+    const { articles = [], pagination = {} } = await res.json();
 
-    if (countEl) countEl.textContent = String(articles.length);
+    if (countEl) countEl.textContent = String(pagination.total || articles.length);
     if (articles.length === 0) {
       container.innerHTML = '<div class="card text-secondary" style="padding: 40px; text-align: center;">還沒有文章。</div>';
       return;
     }
 
-    renderArchive(articles, getPageFromUrl(), 10, container);
+    renderArchive(articles, pagination, pageSize, container);
   } catch (err) {
     console.error('Failed to load archive:', err);
     container.innerHTML = '<div class="card text-secondary" style="padding: 40px; text-align: center;">載入失敗。</div>';
   }
 }
 
-function renderArchive(articles, page, pageSize, container) {
-  const totalPages = Math.max(1, Math.ceil(articles.length / pageSize));
-  const safePage = Math.min(Math.max(page, 1), totalPages);
-  const start = (safePage - 1) * pageSize;
-  const pageArticles = articles.slice(start, start + pageSize);
+function fetchArchivePage(page, limit) {
+  return fetch(`/api/articles?page=${page}&limit=${limit}`);
+}
+
+function renderArchive(articles, pageInfo, pageSize, container) {
+  const safePage = pageInfo.page || 1;
+  const totalPages = pageInfo.totalPages || 1;
+  const total = pageInfo.total || articles.length;
 
   // Group the current page by year, so the archive stays readable after pagination.
   const byYear = {};
-  for (const article of pageArticles) {
+  for (const article of articles) {
     const year = article.published_at
       ? new Date(article.published_at).getFullYear().toString()
       : 'unknown';
@@ -73,13 +77,15 @@ function renderArchive(articles, page, pageSize, container) {
         `).join('')}
       </div>
     </section>
-  `).join('') + `<nav class="pagination" id="archive-pagination" aria-label="文章存檔分頁">${renderPagination(safePage, totalPages, articles.length)}</nav>`;
+  `).join('') + `<nav class="pagination" id="archive-pagination" aria-label="文章存檔分頁">${renderPagination(safePage, totalPages, total)}</nav>`;
 
   const pagination = document.getElementById('archive-pagination');
   if (pagination) {
-    bindPagination(pagination, (nextPage) => {
+    bindPagination(pagination, async (nextPage) => {
       setPageInUrl(nextPage);
-      renderArchive(articles, nextPage, pageSize, container);
+      const res = await fetchArchivePage(nextPage, pageSize);
+      const data = await res.json();
+      renderArchive(data.articles || [], data.pagination || {}, pageSize, container);
     });
   }
 }

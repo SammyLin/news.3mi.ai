@@ -50,7 +50,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       document.getElementById('admin-content').style.display = 'block';
 
       // Load articles
-      const res = await fetch('/api/articles');
+      const res = await fetch('/api/articles?scope=admin');
       const { articles = [] } = await res.json();
 
       const tbody = document.getElementById('articles-tbody');

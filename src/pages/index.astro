@@ -18,12 +18,16 @@ async function loadHome() {
   if (!container) return;
 
   try {
-    const [articlesRes, categoriesRes] = await Promise.all([
-      fetch('/api/articles'),
+    const pageSize = 8;
+    const initialPage = getPageFromUrl();
+    const [articlesRes, featuredRes, categoriesRes] = await Promise.all([
+      fetchArticlesPage(initialPage, pageSize),
+      fetch('/api/articles?featured=1&limit=1'),
       fetch('/api/categories'),
     ]);
 
-    const { articles = [] } = await articlesRes.json();
+    const { articles = [], pagination = {}, sourceCount = 0 } = await articlesRes.json();
+    const { articles: featuredArticles = [] } = await featuredRes.json();
     const { categories = [] } = await categoriesRes.json();
 
     if (articles.length === 0) {
@@ -35,10 +39,7 @@ async function loadHome() {
       return;
     }
 
-    const featured = articles.find(article => article.is_featured) || articles[0];
-    const pageSize = 8;
-    const initialPage = getPageFromUrl();
-    const sourceCount = articles.filter(article => article.source_url).length;
+    const featured = featuredArticles[0] || articles[0];
     const topics = [
       { label: 'AI Engineer World', count: 39, href: '/tag/agent' },
       { label: 'Claude Code 生存指南', count: 81, href: '/tag/tooling' },
@@ -79,7 +80,7 @@ async function loadHome() {
         <div class="aj-meter">
           <h3>OpenClaw · 內容流水線</h3>
           <div class="aj-meter-grid">
-            <div><strong>${articles.length}</strong><span>文章</span></div>
+            <div><strong>${pagination.total || articles.length}</strong><span>文章</span></div>
             <div><strong>${sourceCount}</strong><span>來源</span></div>
             <div><strong>${categories.length}</strong><span>頻道</span></div>
             <div><strong>${new Date().getDate()}</strong><span>今日</span></div>
@@ -100,7 +101,7 @@ async function loadHome() {
       </section>
     `;
 
-    renderPagedArticles(articles, initialPage, pageSize, 'latest-list', 'latest-pagination');
+    renderPagedArticles(articles, pagination, pageSize, 'latest-list', 'latest-pagination');
   } catch (err) {
     console.error('Failed to load home data:', err);
     container.innerHTML = `
@@ -112,21 +113,26 @@ async function loadHome() {
 
 loadHome();
 
-function renderPagedArticles(articles, page, pageSize, listId, paginationId) {
+async function fetchArticlesPage(page, limit) {
+  return fetch(`/api/articles?page=${page}&limit=${limit}`);
+}
+
+function renderPagedArticles(articles, pageInfo, pageSize, listId, paginationId) {
   const list = document.getElementById(listId);
-  const pagination = document.getElementById(paginationId);
-  if (!list || !pagination) return;
+  const paginationEl = document.getElementById(paginationId);
+  if (!list || !paginationEl) return;
 
-  const totalPages = Math.max(1, Math.ceil(articles.length / pageSize));
-  const safePage = Math.min(Math.max(page, 1), totalPages);
-  const start = (safePage - 1) * pageSize;
-  const pageArticles = articles.slice(start, start + pageSize);
+  const page = pageInfo.page || 1;
+  const totalPages = pageInfo.totalPages || 1;
+  const total = pageInfo.total || articles.length;
 
-  list.innerHTML = pageArticles.map(renderAjPost).join('');
-  pagination.innerHTML = renderPagination(safePage, totalPages, articles.length);
-  bindPagination(pagination, (nextPage) => {
+  list.innerHTML = articles.map(renderAjPost).join('');
+  paginationEl.innerHTML = renderPagination(page, totalPages, total);
+  bindPagination(paginationEl, async (nextPage) => {
     setPageInUrl(nextPage);
-    renderPagedArticles(articles, nextPage, pageSize, listId, paginationId);
+    const res = await fetchArticlesPage(nextPage, pageSize);
+    const data = await res.json();
+    renderPagedArticles(data.articles || [], data.pagination || {}, pageSize, listId, paginationId);
   });
 }
 

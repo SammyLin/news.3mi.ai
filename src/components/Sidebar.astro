@@ -109,7 +109,7 @@ const pathname = Astro.url.pathname;
     const list = document.getElementById('sidebar-featured');
     if (!list) return;
     try {
-      const res = await fetch('/api/articles');
+      const res = await fetch('/api/articles?limit=8');
       const { articles = [] } = await res.json();
       const picked = articles.filter((article) => article.is_featured).slice(0, 6);
       const fallback = picked.length ? picked : articles.slice(0, 8);
@@ -134,7 +134,7 @@ const pathname = Astro.url.pathname;
     const tagsEl = document.getElementById('sidebar-tags');
     if (!outpost && !tagsEl) return;
     try {
-      const res = await fetch('/api/articles');
+      const res = await fetch('/api/articles?limit=50');
       const { articles = [] } = await res.json();
 
       if (outpost && articles.length > 0) {
