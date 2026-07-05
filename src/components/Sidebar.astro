@@ -11,14 +11,14 @@ const pathname = Astro.url.pathname;
 {position === 'left' && (
   <>
     <div class="sidebar-section">
-      <h3>📂 分類</h3>
+      <h3>分類</h3>
       <ul class="sidebar-nav" id="sidebar-categories">
         <li><span class="text-muted" style="padding: 8px 12px; display: block;">載入中...</span></li>
       </ul>
     </div>
 
     <div class="sidebar-section">
-      <h3>📡 訂閱</h3>
+      <h3>訂閱</h3>
       <ul class="sidebar-nav">
         <li><a href="/rss.xml">RSS Feed</a></li>
         <li><a href="/sitemap-index.xml">Sitemap</a></li>
@@ -65,7 +65,7 @@ const pathname = Astro.url.pathname;
         const isActive = pathname === '/category/' + cat.slug || pathname === '/category/' + cat.slug + '/';
         return '<li>' +
           '<a href="/category/' + cat.slug + '"' + (isActive ? ' class="active"' : '') + '>' +
-            '<span>' + cat.icon + '</span>' +
+            '<span>' + + '</span>' +
             '<span>' + cat.name + '</span>' +
             (cat.article_count > 0 ? '<span class="text-muted" style="margin-left:auto;font-size:12px;">' + cat.article_count + '</span>' : '') +
           '</a>' +

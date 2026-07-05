@@ -17,13 +17,13 @@ const excerpt = article.excerpt || '';
 
 {featured ? (
   <article class="featured-card">
-    <span class="featured-label">⭐ 焦點</span>
+    <span class="featured-label">焦點文章</span>
     <h2><a href={`/post/${article.slug}`}>{article.title}</a></h2>
     {excerpt && <p class="excerpt">{excerpt}</p>}
     <div class="meta">
       {article.category && (
         <a href={`/category/${article.category.slug}`} class="tag" style={`background: ${article.category.color}22; color: ${article.category.color};`}>
-          {article.category.icon} {article.category.name}
+          {article.category.name}
         </a>
       )}
       <span class="text-muted">· {dateStr}</span>
@@ -35,7 +35,7 @@ const excerpt = article.excerpt || '';
     <div class="meta">
       {article.category && (
         <a href={`/category/${article.category.slug}`} class="tag" style={`background: ${article.category.color}22; color: ${article.category.color};`}>
-          {article.category.icon} {article.category.name}
+          {article.category.name}
         </a>
       )}
       <span class="text-muted">· {dateStr}</span>
@@ -49,7 +49,7 @@ const excerpt = article.excerpt || '';
           <a href={`/tag/${tag.slug}`} class="tag" style="margin-right: 4px;">#{tag.name}</a>
         ))}
       </div>
-      <span class="text-muted">👁 {article.view_count}</span>
+      <span class="text-muted">次瀏覽 {article.view_count}</span>
     </div>
   </article>
 )}

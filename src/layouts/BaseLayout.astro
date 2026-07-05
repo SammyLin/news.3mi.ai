@@ -42,8 +42,14 @@ const canonical = new URL(Astro.url.pathname, Astro.site || 'https://news.3mi.ai
   <meta name="twitter:title" content={fullTitle} />
   <meta name="twitter:description" content={description} />
 
-  <!-- highlight.js theme -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/styles/github-dark.min.css" />
+  <!-- highlight.js theme — 暖色亮色主題 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/styles/github-light.min.css" />
+
+  <!-- Fonts — jfOpenHuninn (溫暖中文) + Noto Sans TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/justfont/open-huninn-font@master/font/jfOpenHuninn.css" />
 </head>
 <body>
   <Header />

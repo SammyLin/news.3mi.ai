@@ -23,7 +23,7 @@ const { slug } = Astro.params;
 
 <BaseLayout title="標籤" description="">
   <header style="margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--border);">
-    <h1 style="font-size: 28px;" id="tag-title">🏷 標籤</h1>
+    <h1 style="font-size: 28px;" id="tag-title">標籤</h1>
     <p class="text-secondary" style="margin-top: 8px;">共 <span id="article-count">...</span> 篇文章</p>
   </header>
 
@@ -55,7 +55,7 @@ async function loadTag() {
     );
 
     document.title = `#${slug} — news.3mi.ai`;
-    if (titleEl) titleEl.textContent = `🏷 #${slug}`;
+    if (titleEl) titleEl.textContent = `#${slug}`;
     if (countEl) countEl.textContent = String(filtered.length);
 
     if (filtered.length === 0) {
