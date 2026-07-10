@@ -40,6 +40,11 @@ async function loadArticle() {
 
     const article = data.article;
     document.title = `${article.title} — news.3mi.ai`;
+
+    // 瀏覽數 +1（fire-and-forget，不擋渲染）
+    try {
+      fetch(`/api/view?slug=${encodeURIComponent(slug)}`, { method: 'POST', keepalive: true });
+    } catch (_) { /* ignore */ }
     const dateStr = article.published_at ? new Date(article.published_at).toISOString().slice(0, 10) : '';
     const sourceLabel = article.source_type ? escapeHtml(article.source_type) : '本站筆記';
 
