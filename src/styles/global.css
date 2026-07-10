@@ -59,6 +59,7 @@ body {
   color: var(--text-primary);
   background: var(--bg-primary);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 img, picture, video, canvas, svg { display: block; max-width: 100%; }
@@ -1255,7 +1256,15 @@ label {
   --content-width: 760px;
   --radius: 12px;
   --radius-lg: 18px;
-  --ease-fluid: cubic-bezier(.2,.8,.2,1);
+  /* Motion — one shared Apple-style easing, applied consistently */
+  --ease: cubic-bezier(.32,.72,0,1);
+  --ease-fluid: var(--ease);
+  --dur: 220ms;
+  --dur-fast: 140ms;
+  /* Depth — softened, layered shadows (low opacity) */
+  --shadow-sm: 0 1px 2px rgba(41,37,36,.04);
+  --shadow-md: 0 2px 8px rgba(41,37,36,.045), 0 10px 24px rgba(41,37,36,.05);
+  --shadow-lg: 0 4px 14px rgba(41,37,36,.05), 0 20px 48px rgba(41,37,36,.07);
   --shadow-soft: 0 1px 2px rgba(41,37,36,.03), 0 12px 34px rgba(41,37,36,.055);
 }
 
@@ -1856,4 +1865,104 @@ button:active, .action-primary:active, .action-secondary:active, .lead-signal:ac
     justify-content: flex-start;
     padding: 5px 8px;
   }
+}
+
+/* ========================================
+   Apple HIG refinement pass
+   clarity · deference · depth — unified motion,
+   layered depth, calmer reading rhythm.
+   All non-essential motion respects
+   prefers-reduced-motion (see block ~L1370).
+   ======================================== */
+
+/* --- MOTION: unified easing + tasteful micro-interactions --- */
+a {
+  transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.site-nav a,
+.sidebar-nav a,
+.source-links a,
+.today-side a,
+.footer-grid nav a {
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.card,
+.article-card,
+.lead-signal,
+.lead-story,
+.today-main,
+.collection-card,
+.aj-today-main {
+  transition: transform var(--dur) var(--ease),
+              box-shadow var(--dur) var(--ease),
+              border-color var(--dur) var(--ease);
+}
+.btn,
+.pagination button,
+.quick-jumps a,
+.topic-cloud a,
+.channel-pill,
+.aj-topic-rail a,
+.aj-ad-strip a {
+  transition: transform var(--dur-fast) var(--ease),
+              background var(--dur-fast) var(--ease),
+              border-color var(--dur-fast) var(--ease),
+              color var(--dur-fast) var(--ease);
+}
+.btn:active,
+.pagination button:active { transform: scale(.98); }
+
+/* --- DEPTH: softer, layered lift on hover --- */
+.card:hover {
+  border-color: var(--border-muted);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+.article-card:hover {
+  border-color: #e4d8bb;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+}
+.collection-card:hover { transform: translateY(-1px); }
+.site-note.card:hover { transform: none; box-shadow: none; }
+
+/* Sticky header: clean blur + faint depth so content passes beneath it calmly */
+.site-header {
+  box-shadow: 0 1px 0 rgba(41,37,36,.02), 0 8px 24px rgba(41,37,36,.03);
+}
+
+/* --- TYPOGRAPHY: calm, premium reading column --- */
+.news-hero h1,
+.article-header h1,
+.brief-copy h1,
+.collection-header h1,
+.featured-card h2,
+.lead-story h2,
+.lead-signal h2,
+.prose h1 {
+  letter-spacing: -.02em;
+  text-wrap: balance;
+}
+.prose p,
+.brief-copy p:not(.eyebrow),
+.lead-story p,
+.signal-row p {
+  text-wrap: pretty;
+}
+/* Comfortable CJK reading rhythm + vertical hierarchy */
+.prose p,
+.prose li { line-height: 1.85; }
+.article-shell .markdown-content { letter-spacing: .005em; }
+.prose h2 { margin-top: 48px; margin-bottom: 18px; }
+.prose h3 { margin-top: 32px; margin-bottom: 12px; }
+.prose blockquote { line-height: 1.8; }
+
+/* --- Gentle content entrance --- */
+.content-full,
+.content {
+  animation: hig-fade-in .5s var(--ease) both;
+}
+@keyframes hig-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
 }
