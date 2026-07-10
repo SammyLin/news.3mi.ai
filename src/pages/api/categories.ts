@@ -36,7 +36,7 @@ export const POST: APIRoute = async (context) => {
     body.name,
     body.description || null,
     body.color || '#58a6ff',
-    body.icon || '📁',
+    body.icon || '',
     body.sort_order || 0
   ).run();
 

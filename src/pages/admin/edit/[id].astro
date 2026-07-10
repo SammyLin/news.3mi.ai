@@ -78,7 +78,7 @@ if (!article) {
             <select id="category_id" name="category_id">
               <option value="">無</option>
               {categories.map((c) => (
-                <option value={c.id} selected={article.category_id === c.id}>{c.icon} {c.name}</option>
+                <option value={c.id} selected={article.category_id === c.id}>{c.name}</option>
               ))}
             </select>
           </div>

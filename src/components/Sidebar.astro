@@ -1,4 +1,6 @@
 ---
+import { CATEGORY_ICON_SVGS } from '../lib/categoryIcon';
+
 interface Props {
   position?: 'left' | 'right';
 }
@@ -78,7 +80,7 @@ const pathname = Astro.url.pathname;
   </>
 )}
 
-<script is:inline define:vars={{ pathname }}>
+<script is:inline define:vars={{ pathname, categoryIcons: CATEGORY_ICON_SVGS }}>
   // Load categories client-side
   (async () => {
     const list = document.getElementById('sidebar-categories');
@@ -94,7 +96,7 @@ const pathname = Astro.url.pathname;
         const isActive = pathname === '/category/' + cat.slug || pathname === '/category/' + cat.slug + '/';
         return '<li>' +
           '<a href="/category/' + cat.slug + '"' + (isActive ? ' class="active"' : '') + '>' +
-            '<span>' + (cat.icon || '') + '</span>' +
+            '<span style="display:inline-flex;align-items:center;color:' + (cat.color || 'inherit') + '">' + (categoryIcons[cat.slug] || categoryIcons._fallback) + '</span>' +
             '<span>' + escapeHtml(cat.name) + '</span>' +
             (cat.article_count > 0 ? '<span class="text-muted" style="margin-left:auto;font-size:12px;">' + cat.article_count + '</span>' : '') +
           '</a>' +

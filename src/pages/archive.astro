@@ -17,6 +17,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script>
+import { categoryIconSvg } from '../lib/categoryIcon';
+
 async function loadArchive() {
   const container = document.getElementById('archive-content');
   const countEl = document.getElementById('article-count');
@@ -67,7 +69,7 @@ function renderArchive(articles, pageInfo, pageSize, container) {
         ${byYear[year].map(article => `
           <a href="/post/${article.slug}" class="collection-card">
             <div class="collection-card-meta">
-              ${article.category ? `<span style="color: ${article.category.color};">${article.category.icon || ''} ${escapeHtml(article.category.name)}</span>` : ''}
+              ${article.category ? `<span style="color: ${article.category.color}; display: inline-flex; align-items: center; gap: 4px;">${categoryIconSvg(article.category.slug)} ${escapeHtml(article.category.name)}</span>` : ''}
               <time>${article.published_at ? new Date(article.published_at).toLocaleDateString('zh-TW') : ''}</time>
               <span>${article.reading_time || 1} 分鐘</span>
             </div>

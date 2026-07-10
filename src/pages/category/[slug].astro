@@ -37,6 +37,8 @@ const { slug } = Astro.params;
 </BaseLayout>
 
 <script>
+import { categoryIconSvg } from '../../lib/categoryIcon';
+
 async function loadCategory() {
   const slug = window.__CATEGORY_SLUG__;
   const titleEl = document.getElementById('category-title');
@@ -103,7 +105,7 @@ function renderCollectionCard(article) {
   return `
     <a href="/post/${article.slug}" class="collection-card">
       <div class="collection-card-meta">
-        ${article.category ? `<span style="color: ${article.category.color};">${article.category.icon || ''} ${escapeHtml(article.category.name)}</span>` : ''}
+        ${article.category ? `<span style="color: ${article.category.color}; display: inline-flex; align-items: center; gap: 4px;">${categoryIconSvg(article.category.slug)} ${escapeHtml(article.category.name)}</span>` : ''}
         <time>${article.published_at ? new Date(article.published_at).toLocaleDateString('zh-TW') : ''}</time>
         <span>${article.reading_time || 1} 分鐘</span>
       </div>
