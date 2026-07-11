@@ -190,10 +190,14 @@ async function loadArticle() {
 
         <aside class="article-subscribe">
           <div>
-            <strong>追蹤後續整理</strong>
-            <p>用 RSS 接收 AI 工程訊號、工具觀察與架構筆記。</p>
+            <strong>訂閱電子報</strong>
+            <p>AI 工程訊號、工具觀察與架構筆記,寄到你的信箱。也可以用 <a href="/rss.xml">RSS</a>。</p>
           </div>
-          <a href="/rss.xml">RSS Feed</a>
+          <form class="subscribe-form" data-source="post">
+            <input type="email" name="email" placeholder="you@example.com" required maxlength="254" autocomplete="email">
+            <input type="text" name="website" class="subscribe-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <button type="submit" class="btn btn-primary">訂閱</button>
+          </form>
         </aside>
       </article>`;
 

@@ -4,6 +4,17 @@ const year = new Date().getFullYear();
 
 <footer class="site-footer">
   <div class="container">
+    <div class="subscribe-box">
+      <div>
+        <strong>訂閱電子報</strong>
+        <p>新文章與工程判讀,直接寄到你的信箱。</p>
+      </div>
+      <form class="subscribe-form" data-source="footer">
+        <input type="email" name="email" placeholder="you@example.com" required maxlength="254" autocomplete="email">
+        <input type="text" name="website" class="subscribe-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button type="submit" class="btn btn-primary">訂閱</button>
+      </form>
+    </div>
     <div class="footer-grid">
       <div>
         <strong>news.3mi.ai</strong>
@@ -19,3 +30,43 @@ const year = new Date().getFullYear();
     <p class="footer-small">© {year} news.3mi.ai</p>
   </div>
 </footer>
+
+<script>
+// 事件委派：接住全站所有 .subscribe-form（含文章頁 runtime 注入的）
+document.addEventListener('submit', async (e) => {
+  const form = (e.target as HTMLElement)?.closest?.('.subscribe-form') as HTMLFormElement | null;
+  if (!form) return;
+  e.preventDefault();
+
+  const emailInput = form.querySelector('input[name="email"]') as HTMLInputElement;
+  const honeypot = form.querySelector('input[name="website"]') as HTMLInputElement;
+  const button = form.querySelector('button') as HTMLButtonElement;
+  button.disabled = true;
+  button.textContent = '送出中...';
+
+  try {
+    const res = await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: emailInput.value,
+        website: honeypot?.value || '',
+        source: form.dataset.source || location.pathname,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || '訂閱失敗');
+    form.outerHTML = '<p class="subscribe-done">已訂閱,之後有新內容會寄給你。</p>';
+  } catch (err: any) {
+    button.disabled = false;
+    button.textContent = '訂閱';
+    let msg = form.querySelector('.subscribe-error') as HTMLElement;
+    if (!msg) {
+      msg = document.createElement('p');
+      msg.className = 'subscribe-error';
+      form.appendChild(msg);
+    }
+    msg.textContent = err.message;
+  }
+});
+</script>
