@@ -33,6 +33,8 @@ const { slug } = Astro.params;
 </BaseLayout>
 
 <script>
+  import { coverThumb } from '../../lib/cover';
+
   const slug = (window as any).__SERIES_SLUG__;
 
   function escapeHtml(s: string) {
@@ -63,6 +65,7 @@ const { slug } = Astro.params;
         <li class="series-item">
           <a href="/post/${escapeHtml(a.slug)}" class="card series-item-card">
             <span class="series-item-num">${String(i + 1).padStart(2, '0')}</span>
+            ${coverThumb(a, 'card-thumb series-thumb')}
             <span class="series-item-body">
               <span class="series-item-title">${escapeHtml(a.title)}</span>
               ${a.excerpt ? `<span class="series-item-excerpt">${escapeHtml(a.excerpt)}</span>` : ''}

@@ -18,6 +18,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <script>
 import { categoryIconSvg } from '../lib/categoryIcon';
+import { coverThumb } from '../lib/cover';
 
 async function loadArchive() {
   const container = document.getElementById('archive-content');
@@ -68,13 +69,16 @@ function renderArchive(articles, pageInfo, pageSize, container) {
       <div>
         ${byYear[year].map(article => `
           <a href="/post/${article.slug}" class="collection-card">
-            <div class="collection-card-meta">
-              ${article.category ? `<span style="color: ${article.category.color}; display: inline-flex; align-items: center; gap: 4px;">${categoryIconSvg(article.category.slug)} ${escapeHtml(article.category.name)}</span>` : ''}
-              <time>${article.published_at ? new Date(article.published_at).toLocaleDateString('zh-TW') : ''}</time>
-              <span>${article.reading_time || 1} 分鐘</span>
+            <div class="collection-card-body">
+              <div class="collection-card-meta">
+                ${article.category ? `<span style="color: ${article.category.color}; display: inline-flex; align-items: center; gap: 4px;">${categoryIconSvg(article.category.slug)} ${escapeHtml(article.category.name)}</span>` : ''}
+                <time>${article.published_at ? new Date(article.published_at).toLocaleDateString('zh-TW') : ''}</time>
+                <span>${article.reading_time || 1} 分鐘</span>
+              </div>
+              <h3>${escapeHtml(article.title)}</h3>
+              <p>${escapeHtml(article.excerpt || '')}</p>
             </div>
-            <h3>${escapeHtml(article.title)}</h3>
-            <p>${escapeHtml(article.excerpt || '')}</p>
+            ${coverThumb(article, 'card-thumb collection-thumb')}
           </a>
         `).join('')}
       </div>

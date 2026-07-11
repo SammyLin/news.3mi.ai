@@ -18,6 +18,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <script>
   import { categoryIconSvg } from '../lib/categoryIcon';
+  import { coverThumb } from '../lib/cover';
 
   function escapeHtml(s: string) {
     return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -37,12 +38,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <li class="trending-item">
           <span class="trending-rank">${i + 1}</span>
           <a href="/post/${escapeHtml(a.slug)}" class="card trending-card">
-            <div class="trending-meta">
-              ${a.category ? `<span style="color:${a.category.color}; display:inline-flex; align-items:center; gap:4px;">${categoryIconSvg(a.category.slug)} ${escapeHtml(a.category.name)}</span>` : ''}
-              <span class="text-muted">次瀏覽 ${a.view_count || 0}</span>
+            ${coverThumb(a, 'card-thumb trending-thumb')}
+            <div class="trending-body">
+              <div class="trending-meta">
+                ${a.category ? `<span style="color:${a.category.color}; display:inline-flex; align-items:center; gap:4px;">${categoryIconSvg(a.category.slug)} ${escapeHtml(a.category.name)}</span>` : ''}
+                <span class="text-muted">次瀏覽 ${a.view_count || 0}</span>
+              </div>
+              <div class="trending-title">${escapeHtml(a.title)}</div>
+              ${a.excerpt ? `<div class="trending-excerpt">${escapeHtml(a.excerpt)}</div>` : ''}
             </div>
-            <div class="trending-title">${escapeHtml(a.title)}</div>
-            ${a.excerpt ? `<div class="trending-excerpt">${escapeHtml(a.excerpt)}</div>` : ''}
           </a>
         </li>
       `).join('') + '</ol>';
@@ -68,7 +72,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     padding-top: 16px;
   }
   .trending-item:nth-child(-n+3) .trending-rank { color: var(--accent); }
-  .trending-card { flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 16px 20px; }
+  .trending-card { flex: 1; display: flex; flex-direction: row; align-items: center; gap: 16px; padding: 16px 20px; }
+  .trending-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1; }
   .trending-meta { display: flex; gap: 10px; align-items: center; font-size: 12px; }
   .trending-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
   .trending-excerpt { font-size: 13px; color: var(--text-secondary); line-height: 1.55; }
