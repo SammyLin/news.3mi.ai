@@ -24,4 +24,4 @@ R2_PUBLIC_URL = "https://images.news.3mi.ai"
 # Secrets（用 wrangler secret put 設定，不寫在這裡）
 # ADMIN_PASSWORD
 # JWT_SECRET
-# OPENCLAW_INGEST_KEY
+# OPENCLAW_NEWS_INGEST_KEY

@@ -35,7 +35,7 @@ export const GET: APIRoute = async (context) => {
 /** Idempotent OpenClaw article ingestion, deduped by source_url then slug. */
 export const POST: APIRoute = async (context) => {
   const env = getEnv(context);
-  if (!authorized(context.request, env.OPENCLAW_INGEST_KEY)) return json({ error: 'Unauthorized' }, 401);
+  if (!authorized(context.request, env.OPENCLAW_NEWS_INGEST_KEY || env.OPENCLAW_INGEST_KEY)) return json({ error: 'Unauthorized' }, 401);
 
   let body: any;
   try { body = await context.request.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
