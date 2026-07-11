@@ -2111,3 +2111,6 @@ a {
   .subscribe-box, .article-subscribe { flex-direction: column; align-items: stretch; }
   .subscribe-form input[name="email"] { flex: 1; min-width: 0; }
 }
+
+/* 訂閱框內連結不套 .prose a 的 break-all（避免「RSS」被折行） */
+.article-subscribe a, .subscribe-box a { word-break: keep-all; white-space: nowrap; }
