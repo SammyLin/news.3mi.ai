@@ -31,7 +31,7 @@ const EXT_MAP: Record<string, string> = {
  */
 export const POST: APIRoute = async (context) => {
   const env = getEnv(context);
-  if (!(await isAuthenticated(context.request, env.JWT_SECRET || 'fallback-secret'))) {
+  if (!(await isAuthenticated(context.request, env.JWT_SECRET))) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
@@ -114,7 +114,7 @@ export const POST: APIRoute = async (context) => {
 /** GET 列出最近上傳（debug 用，安全檢查後續再加） */
 export const GET: APIRoute = async (context) => {
   const env = getEnv(context);
-  if (!(await isAuthenticated(context.request, env.JWT_SECRET || 'fallback-secret'))) {
+  if (!(await isAuthenticated(context.request, env.JWT_SECRET))) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 

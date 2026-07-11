@@ -63,7 +63,7 @@ export const GET: APIRoute = async (context) => {
 
   const scope = url.searchParams.get('scope');
   if (scope === 'admin') {
-    if (!(await isAuthenticated(context.request, env.JWT_SECRET || 'fallback-secret'))) {
+    if (!(await isAuthenticated(context.request, env.JWT_SECRET))) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
     const articles = (await listAllArticles(db)).map(summarizeArticle);
@@ -107,7 +107,7 @@ function clampInt(value: string | null, fallback: number, min: number, max: numb
 
 export const POST: APIRoute = async (context) => {
   const env = getEnv(context);
-  if (!(await isAuthenticated(context.request, env.JWT_SECRET || 'fallback-secret'))) {
+  if (!(await isAuthenticated(context.request, env.JWT_SECRET))) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
@@ -142,7 +142,7 @@ export const POST: APIRoute = async (context) => {
 
 export const PUT: APIRoute = async (context) => {
   const env = getEnv(context);
-  if (!(await isAuthenticated(context.request, env.JWT_SECRET || 'fallback-secret'))) {
+  if (!(await isAuthenticated(context.request, env.JWT_SECRET))) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
@@ -173,7 +173,7 @@ export const PUT: APIRoute = async (context) => {
 
 export const DELETE: APIRoute = async (context) => {
   const env = getEnv(context);
-  if (!(await isAuthenticated(context.request, env.JWT_SECRET || 'fallback-secret'))) {
+  if (!(await isAuthenticated(context.request, env.JWT_SECRET))) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 

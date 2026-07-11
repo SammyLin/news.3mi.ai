@@ -65,8 +65,8 @@ async function loadArticle() {
           <h1>${escapeHtml(article.title)}</h1>
           ${article.excerpt ? `<p style="font-size: 16px; color: var(--text-secondary); margin-top: 12px;">${escapeHtml(article.excerpt)}</p>` : ''}
           <div class="article-actions">
-            ${article.source_url ? `<a class="source-card" href="${escapeAttr(article.source_url)}" target="_blank" rel="noopener"><span>原文來源</span><strong>${sourceLabel}</strong></a>` : ''}
-            ${article.related_chunk_url ? `<a class="source-card" href="${escapeAttr(article.related_chunk_url)}" target="_blank" rel="noopener"><span>延伸練習 · ChunkUp</span><strong>${escapeHtml(article.related_chunk_title || '練習相關英文語塊')}</strong></a>` : ''}
+            ${isHttpUrl(article.source_url) ? `<a class="source-card" href="${escapeAttr(article.source_url)}" target="_blank" rel="noopener"><span>原文來源</span><strong>${sourceLabel}</strong></a>` : ''}
+            ${isHttpUrl(article.related_chunk_url) ? `<a class="source-card" href="${escapeAttr(article.related_chunk_url)}" target="_blank" rel="noopener"><span>延伸練習 · ChunkUp</span><strong>${escapeHtml(article.related_chunk_title || '練習相關英文語塊')}</strong></a>` : ''}
             <a class="source-card" href="/archive"><span>返回</span><strong>文章存檔</strong></a>
           </div>
         </header>
@@ -121,6 +121,10 @@ function escapeHtml(s) {
 
 function escapeAttr(s) {
   return escapeHtml(s).replace(/`/g, '&#96;');
+}
+
+function isHttpUrl(s) {
+  return typeof s === 'string' && /^https?:\/\//i.test(s.trim());
 }
 
 loadArticle();

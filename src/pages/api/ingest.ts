@@ -43,6 +43,7 @@ export const POST: APIRoute = async (context) => {
   const contentMd = String(body.content_md || body.content || '').trim();
   const sourceUrl = String(body.source_url || '').trim();
   if (!title || !contentMd || !sourceUrl) return json({ error: 'title, content_md, source_url are required' }, 400);
+  if (!/^https?:\/\//i.test(sourceUrl)) return json({ error: 'source_url must be an http(s) URL' }, 400);
 
   const db = getDB(context);
   const slug = slugify(String(body.slug || title));
@@ -71,7 +72,9 @@ export const POST: APIRoute = async (context) => {
     cover_image: cover,
     source_url: sourceUrl,
     source_type: String(body.source_type || 'OpenClaw'),
-    related_chunk_url: body.related_chunk_url ? String(body.related_chunk_url) : undefined,
+    related_chunk_url: body.related_chunk_url && /^https?:\/\//i.test(String(body.related_chunk_url).trim())
+      ? String(body.related_chunk_url).trim()
+      : undefined,
     related_chunk_title: body.related_chunk_title ? String(body.related_chunk_title) : undefined,
     content_type: ['signal','deep-dive','field-note','decision-card'].includes(body.content_type) ? body.content_type : 'signal',
     decision_status: ['adopt','trial','watch','avoid'].includes(body.decision_status) ? body.decision_status : 'watch',

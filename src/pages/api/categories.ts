@@ -21,7 +21,7 @@ export const GET: APIRoute = async (context) => {
 
 export const POST: APIRoute = async (context) => {
   const env = getEnv(context);
-  if (!(await isAuthenticated(context.request, env.JWT_SECRET || 'fallback-secret'))) {
+  if (!(await isAuthenticated(context.request, env.JWT_SECRET))) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 

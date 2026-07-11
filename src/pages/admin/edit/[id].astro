@@ -6,7 +6,7 @@ import { getArticleBySlug, listCategories, listSeries, getDB } from '../../../li
 import { isAuthenticated } from '../../../lib/auth';
 import { Pencil, Upload } from 'lucide-astro';
 
-const isAuthed = await isAuthenticated(Astro.request, (Astro.locals as any)?.runtime?.env?.JWT_SECRET || 'fallback-secret');
+const isAuthed = await isAuthenticated(Astro.request, (Astro.locals as any)?.runtime?.env?.JWT_SECRET);
 if (!isAuthed) return Astro.redirect('/admin/login');
 
 const { id } = Astro.params;

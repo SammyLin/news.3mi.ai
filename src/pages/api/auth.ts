@@ -13,7 +13,7 @@ const getEnv = (context: any) => context.locals.runtime?.env || context.locals.c
 
 export const GET: APIRoute = async (context) => {
   const env = getEnv(context);
-  const authed = await isAuthenticated(context.request, env.JWT_SECRET || 'fallback-secret');
+  const authed = await isAuthenticated(context.request, env.JWT_SECRET);
   return new Response(JSON.stringify({ authenticated: authed }), {
     headers: { 'Content-Type': 'application/json' },
   });
@@ -31,7 +31,10 @@ export const POST: APIRoute = async (context) => {
     return new Response(JSON.stringify({ error: 'Invalid password' }), { status: 401 });
   }
 
-  const token = await createSessionToken(env.JWT_SECRET || 'fallback-secret');
+  if (!env.JWT_SECRET) {
+    return new Response(JSON.stringify({ error: 'Server misconfigured' }), { status: 500 });
+  }
+  const token = await createSessionToken(env.JWT_SECRET);
   return new Response(JSON.stringify({ success: true }), {
     headers: {
       'Content-Type': 'application/json',
