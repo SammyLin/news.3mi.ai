@@ -1,21 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
-export async function getStaticPaths() {
-  // Build-time: hardcode known tag slugs
-  // Update when new tags are added
-  return [
-    { params: { slug: 'llm' } },
-    { params: { slug: 'agent' } },
-    { params: { slug: 'architecture' } },
-    { params: { slug: 'cloudflare' } },
-    { params: { slug: 'astro' } },
-    { params: { slug: 'typescript' } },
-    { params: { slug: 'meta' } },
-    { params: { slug: 'security' } },
-    { params: { slug: 'tooling' } },
-  ];
-}
+export const prerender = false;
 
 const { slug } = Astro.params;
 ---
