@@ -16,6 +16,8 @@ bucket_name = "news-3mi-images"
 preview_bucket_name = "news-3mi-images-preview"
 
 [vars]
+# reads.3mi.ai DNS 生效後改 "1" 再部署,news→reads 301 才會啟動
+READS_REDIRECT = "0"
 PUBLIC_SITE_URL = "https://reads.3mi.ai"
 PUBLIC_SITE_NAME = "reads.3mi.ai"
 PUBLIC_SITE_DESCRIPTION = "Sammy 的 AI 工程筆記 — 架構、工具、實戰"
