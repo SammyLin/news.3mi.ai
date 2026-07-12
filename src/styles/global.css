@@ -556,19 +556,23 @@ a:hover {
   color: var(--text-primary);
 }
 .prose p {
-  margin: 16px 0;
+  margin: 1.25em 0;
   line-height: 1.85;
   color: var(--text-primary);
   font-size: 16px;
+  text-align: justify;
+  line-break: strict;
+  text-wrap: pretty;
 }
 .prose ul, .prose ol {
   margin: 16px 0;
-  padding-left: 24px;
+  padding-left: 1.5em;
   line-height: 1.85;
 }
 .prose li {
   margin: 8px 0;
   color: var(--text-primary);
+  text-wrap: pretty;
 }
 .prose blockquote {
   border-left: 3px solid var(--accent);
@@ -607,10 +611,15 @@ a:hover {
   font-size: inherit;
 }
 .prose img {
+  display: block;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  margin: 24px auto;
+  margin: 28px auto;
+  max-width: 100%;
+  height: auto;
 }
+/* marked 會把圖包進 <p>：間距交給段落節奏，避免 p margin + img margin 疊加 */
+.prose p > img:only-child { margin: 0 auto; }
 .prose hr {
   border: none;
   border-top: 1px solid var(--border);
@@ -2019,10 +2028,13 @@ a {
 /* Comfortable CJK reading rhythm + vertical hierarchy */
 .prose p,
 .prose li { line-height: 1.85; }
-.article-shell .markdown-content { letter-spacing: .005em; }
 .prose h2 { margin-top: 48px; margin-bottom: 18px; }
 .prose h3 { margin-top: 32px; margin-bottom: 12px; }
 .prose blockquote { line-height: 1.8; }
+/* 文章頁內文：字級 17px、行高上限 1.9，硬換行(<br>)行間顯著小於段間 */
+.article-shell .markdown-content p,
+.article-shell .markdown-content li { font-size: 17px; line-height: 1.9; }
+.article-shell .markdown-content p { margin: 1.35em 0; }
 
 /* --- Gentle content entrance --- */
 .content-full,
