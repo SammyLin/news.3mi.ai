@@ -181,6 +181,15 @@ export const PUT: APIRoute = async (context) => {
   delete updates.created_via;
   delete updates.gen_model;
   delete updates.ingest_ip;
+  // 發佈日期可改,但要是合法日期;updated_at 一律 server 管
+  delete updates.updated_at;
+  if (updates.published_at !== undefined) {
+    if (typeof updates.published_at === 'string' && updates.published_at && !Number.isNaN(Date.parse(updates.published_at))) {
+      updates.published_at = new Date(updates.published_at).toISOString();
+    } else {
+      delete updates.published_at;
+    }
+  }
   if (body.content_md !== undefined && !body.content_html) {
     updates.content_html = renderMarkdown(body.content_md);
     if (!body.excerpt) {
