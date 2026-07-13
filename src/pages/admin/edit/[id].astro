@@ -33,6 +33,10 @@ try {
 if (!article) {
   return Astro.redirect('/admin');
 }
+
+// UTC ISO → 台北時間 "YYYY-MM-DD HH:mm"(sv-SE locale 剛好是這個格式)
+const fmtTaipei = (s: string | null) =>
+  s ? new Date(s).toLocaleString('sv-SE', { timeZone: 'Asia/Taipei' }).slice(0, 16) : '';
 ---
 
 <AdminLayout>
@@ -98,8 +102,8 @@ if (!article) {
 
         <div class="form-group">
           <label>發佈日期</label>
-          <input type="datetime-local" id="published_at" name="published_at" value={article.published_at ? article.published_at.slice(0, 16) : ''} />
-          <p class="text-muted" style="font-size: 12px; margin: 4px 0 0;">留空＝發佈時自動蓋時間；更新日期由系統管理{article.updated_at ? `（${article.updated_at.slice(0, 10)}）` : ''}</p>
+          <input type="text" id="published_at" name="published_at" value={fmtTaipei(article.published_at)} placeholder="選擇日期時間" autocomplete="off" />
+          <p class="text-muted" style="font-size: 12px; margin: 4px 0 0;">留空＝發佈時自動蓋時間；更新時間由系統管理{article.updated_at ? `（${fmtTaipei(article.updated_at)}）` : ''}</p>
         </div>
 
         <div class="form-group">
@@ -221,7 +225,42 @@ if (!article) {
     }
   </style>
 
+  <style is:global>
+    /* flatpickr → 3mi design tokens */
+    .flatpickr-calendar {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      font-family: inherit;
+    }
+    .flatpickr-months .flatpickr-month,
+    .flatpickr-weekdays, span.flatpickr-weekday { background: transparent; color: var(--text-primary); }
+    .flatpickr-current-month .flatpickr-monthDropdown-months { background: var(--bg-secondary); color: var(--text-primary); }
+    .flatpickr-day { color: var(--text-primary); border-radius: var(--radius); }
+    .flatpickr-day:hover { background: var(--bg-tertiary); border-color: var(--bg-tertiary); }
+    .flatpickr-day.today { border-color: var(--accent); }
+    .flatpickr-day.selected, .flatpickr-day.selected:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay { color: var(--text-muted); }
+    .flatpickr-time { border-top: 1px solid var(--border); }
+    .flatpickr-time input, .flatpickr-time .flatpickr-time-separator { color: var(--text-primary); background: transparent; }
+    .flatpickr-time input:hover, .flatpickr-time input:focus { background: var(--bg-tertiary); }
+    .flatpickr-months .flatpickr-prev-month svg, .flatpickr-months .flatpickr-next-month svg { fill: var(--text-secondary); }
+  </style>
+
   <script>
+    import flatpickr from 'flatpickr';
+    import { MandarinTraditional } from 'flatpickr/dist/l10n/zh-tw.js';
+    import 'flatpickr/dist/flatpickr.css';
+
+    flatpickr('#published_at', {
+      enableTime: true,
+      time_24hr: true,
+      dateFormat: 'Y-m-d H:i',
+      locale: MandarinTraditional,
+      allowInput: true,
+    });
+
     const contentEl = document.getElementById('content_md') as HTMLTextAreaElement;
     const charCount = document.getElementById('char-count')!;
     const form = document.getElementById('article-form') as HTMLFormElement;
