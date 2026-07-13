@@ -10,16 +10,24 @@ import { Flame } from 'lucide-astro';
 const isAuthed = await isAuthenticated(Astro.request, (Astro.locals as any)?.runtime?.env?.JWT_SECRET);
 if (!isAuthed) return Astro.redirect('/admin/login');
 
+const PAGE_SIZE = 30;
+const pageParam = Number(Astro.url.searchParams.get('page') || '1');
+const page = Number.isFinite(pageParam) && pageParam > 0 ? Math.floor(pageParam) : 1;
+
 let rows: any[] = [];
 let machineSummary: any[] = [];
+let totalRows = 0;
 try {
   const db = getDB(Astro);
+  const countResult = await db.prepare(`SELECT COUNT(*) as n FROM usage_daily`).first();
+  totalRows = Number((countResult as any)?.n || 0);
+
   const result = await db.prepare(`
     SELECT provider, day, machine, tokens, cost_usd, messages, models, updated_at
     FROM usage_daily
     ORDER BY day DESC, provider ASC, machine ASC
-    LIMIT 120
-  `).all();
+    LIMIT ? OFFSET ?
+  `).bind(PAGE_SIZE, (page - 1) * PAGE_SIZE).all();
   rows = (result.results as any[]) || [];
 
   const summaryResult = await db.prepare(`
@@ -32,6 +40,12 @@ try {
   machineSummary = (summaryResult.results as any[]) || [];
 } catch (e) {
   console.error(e);
+}
+
+const totalPages = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
+
+function pageHref(p: number) {
+  return p === 1 ? '/admin/usage' : `/admin/usage?page=${p}`;
 }
 
 function topModels(raw: unknown): string {
@@ -110,7 +124,7 @@ function topModels(raw: unknown): string {
   </div>
 
   <div class="card usage-admin-card">
-    <h2>每日明細（近 120 筆，每機器一列）</h2>
+    <h2>每日明細（每機器一列，共 {totalRows} 筆）</h2>
     {rows.length === 0 ? (
       <p class="usage-admin-hint">還沒有用量資料。</p>
     ) : (
@@ -119,7 +133,7 @@ function topModels(raw: unknown): string {
           <tr><th>日期</th><th>Provider</th><th>機器</th><th>Tokens</th><th>花費</th><th>Messages</th><th>模型（前三）</th><th>更新</th></tr>
         </thead>
         <tbody>
-          {rows.map((r) => (
+          {rows.map((r: any) => (
             <tr>
               <td>{r.day}</td>
               <td>{r.provider}</td>
@@ -133,6 +147,18 @@ function topModels(raw: unknown): string {
           ))}
         </tbody>
       </table>
+    )}
+    {totalPages > 1 && (
+      <nav class="pagination" aria-label="用量明細分頁">
+        {page > 1 ? <a href={pageHref(page - 1)}>上一頁</a> : <span class="page-disabled">上一頁</span>}
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) =>
+          p === page
+            ? <span class="active" aria-current="page">{p}</span>
+            : <a href={pageHref(p)}>{p}</a>
+        )}
+        {page < totalPages ? <a href={pageHref(page + 1)}>下一頁</a> : <span class="page-disabled">下一頁</span>}
+        <span class="pagination-summary">第 {page}/{totalPages} 頁 · 共 {totalRows} 筆</span>
+      </nav>
     )}
   </div>
 
