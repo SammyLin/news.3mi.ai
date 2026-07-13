@@ -149,14 +149,59 @@ function whyRead(article: ArticleWithMeta) {
   ) : (
     <>
       <section class="lead-grid" id="must-read">
-        {featured && (
-          <a href={`/post/${featured.slug}`} class="lead-signal lead-signal--calm">
-            <span>今日觀點</span>
-            <h2>{featured.title}</h2>
-            <p>{featured.excerpt || ''}</p>
-            <small>{formatDate(featured.published_at)} · {featured.category?.name || 'AI'} · {sourceName(featured)}</small>
-          </a>
-        )}
+        <div class="lead-col">
+          {featured && (
+            <a href={`/post/${featured.slug}`} class="lead-signal lead-signal--calm">
+              <span>今日觀點</span>
+              <h2>{featured.title}</h2>
+              <p>{featured.excerpt || ''}</p>
+              <small>{formatDate(featured.published_at)} · {featured.category?.name || 'AI'} · {sourceName(featured)}</small>
+            </a>
+          )}
+          {usageCards.length > 0 && (
+            <div class="usage-cards" aria-label="LLM 用量">
+              {usageCards.map(({ summary, label, accent, cells }) => (
+                <div class="usage-card" style={`--u-accent: ${accent}`}>
+                  <div class="usage-head">
+                    <h2><i class="usage-dot"></i>{label}</h2>
+                    <div class="usage-head-meta">
+                      <span>{summary.active_days} 活躍日</span>
+                      {summary.top_model && <span>最愛 <code>{summary.top_model}</code></span>}
+                    </div>
+                  </div>
+                  <div class="usage-stats">
+                    <div><strong>{formatCost(summary.totals.cost_usd)}</strong><span>花費</span></div>
+                    <div><strong>{formatTokens(summary.totals.tokens)}</strong><span>tokens</span></div>
+                    {summary.totals.messages > 0
+                      ? <div><strong>{formatCount(summary.totals.messages)}</strong><span>messages</span></div>
+                      : <div><strong>{summary.active_days}</strong><span>活躍日</span></div>}
+                    <div><strong>{summary.streak} 天</strong><span>連續</span></div>
+                  </div>
+                  <div class="usage-heatmap" role="img" aria-label={`${label} 每日用量熱力圖`}>
+                    {cells.map((c) => (
+                      <i class={`u${c.level}${c.inRange ? '' : ' u-void'}`} title={c.inRange ? c.day : ''}></i>
+                    ))}
+                  </div>
+                  <div class="usage-scale"><span>少</span><i class="u1"></i><i class="u2"></i><i class="u3"></i><i class="u4"></i><i class="u5"></i><span>多</span></div>
+                  {summary.model_share.length > 0 && (
+                    <>
+                      <div class="usage-modelbar">
+                        {summary.model_share.map((m, idx) => (
+                          <i style={`width: ${(m.share * 100).toFixed(2)}%; opacity: ${Math.max(0.25, 1 - idx * 0.15)}`} title={`${m.model} · ${(m.share * 100).toFixed(1)}%`}></i>
+                        ))}
+                      </div>
+                      <div class="usage-legend">
+                        {summary.model_share.slice(0, 5).map((m, idx) => (
+                          <span><i style={`opacity: ${Math.max(0.25, 1 - idx * 0.15)}`}></i>{m.model} · {(m.share * 100).toFixed(1)}%</span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         <aside class="pinned-rail" aria-label="置頂精選">
           <h2>置頂精選</h2>
           <ul>
@@ -172,50 +217,6 @@ function whyRead(article: ArticleWithMeta) {
           </ul>
         </aside>
       </section>
-
-      {usageCards.length > 0 && (
-        <section class="usage-cards" aria-label="LLM 用量">
-          {usageCards.map(({ summary, label, accent, cells }) => (
-            <div class="usage-card" style={`--u-accent: ${accent}`}>
-              <div class="usage-head">
-                <h2><i class="usage-dot"></i>{label}</h2>
-                <div class="usage-head-meta">
-                  <span>{summary.active_days} 活躍日</span>
-                  {summary.top_model && <span>最愛 <code>{summary.top_model}</code></span>}
-                </div>
-              </div>
-              <div class="usage-stats">
-                <div><strong>{formatCost(summary.totals.cost_usd)}</strong><span>花費</span></div>
-                <div><strong>{formatTokens(summary.totals.tokens)}</strong><span>tokens</span></div>
-                {summary.totals.messages > 0
-                  ? <div><strong>{formatCount(summary.totals.messages)}</strong><span>messages</span></div>
-                  : <div><strong>{summary.active_days}</strong><span>活躍日</span></div>}
-                <div><strong>{summary.streak} 天</strong><span>連續</span></div>
-              </div>
-              <div class="usage-heatmap" role="img" aria-label={`${label} 每日用量熱力圖`}>
-                {cells.map((c) => (
-                  <i class={`u${c.level}${c.inRange ? '' : ' u-void'}`} title={c.inRange ? c.day : ''}></i>
-                ))}
-              </div>
-              <div class="usage-scale"><span>少</span><i class="u1"></i><i class="u2"></i><i class="u3"></i><i class="u4"></i><i class="u5"></i><span>多</span></div>
-              {summary.model_share.length > 0 && (
-                <>
-                  <div class="usage-modelbar">
-                    {summary.model_share.map((m, idx) => (
-                      <i style={`width: ${(m.share * 100).toFixed(2)}%; opacity: ${Math.max(0.25, 1 - idx * 0.15)}`} title={`${m.model} · ${(m.share * 100).toFixed(1)}%`}></i>
-                    ))}
-                  </div>
-                  <div class="usage-legend">
-                    {summary.model_share.slice(0, 7).map((m, idx) => (
-                      <span><i style={`opacity: ${Math.max(0.25, 1 - idx * 0.15)}`}></i>{m.model} · {(m.share * 100).toFixed(1)}%</span>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          ))}
-        </section>
-      )}
 
       <section class="channel-strip">
         {categories.map((cat) => (

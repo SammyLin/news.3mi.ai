@@ -1426,19 +1426,23 @@ button:active, .action-primary:active, .action-secondary:active, .lead-signal:ac
 .pinned-rail li a svg { flex-shrink: 0; margin-top: 3px; color: var(--accent); }
 .pinned-rail li small { display: block; margin-top: 3px; color: var(--text-muted); font-size: 12px; }
 
-/* LLM 用量卡（80aj 式熱力圖） */
-.usage-cards { display: grid; gap: 16px; margin-bottom: 32px; }
-.usage-card { padding: 20px 24px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-secondary); }
-.usage-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; padding-bottom: 14px; border-bottom: 1px dashed var(--border); }
-.usage-head h2 { display: flex; align-items: center; gap: 8px; font-size: 16px; letter-spacing: -.01em; }
-.usage-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--u-accent); }
-.usage-head-meta { display: flex; gap: 10px; color: var(--text-muted); font-size: 12px; align-items: center; }
-.usage-head-meta code { padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, var(--u-accent) 12%, transparent); color: var(--u-accent); font-size: 12px; }
-.usage-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 16px 0; border-bottom: 1px dashed var(--border); margin-bottom: 16px; }
+/* 首頁左欄：今日觀點 + 用量卡疊在同一欄 */
+.lead-col { display: grid; gap: 14px; align-self: start; min-width: 0; }
+.lead-col .lead-signal--calm { align-self: stretch; }
+
+/* LLM 用量卡（80aj 式熱力圖，縮小版：跟著今日觀點走） */
+.usage-cards { display: grid; gap: 12px; }
+.usage-card { padding: 14px 18px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-secondary); }
+.usage-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; padding-bottom: 10px; border-bottom: 1px dashed var(--border); }
+.usage-head h2 { display: flex; align-items: center; gap: 7px; font-size: 14px; letter-spacing: -.01em; }
+.usage-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--u-accent); }
+.usage-head-meta { display: flex; gap: 8px; color: var(--text-muted); font-size: 11px; align-items: center; }
+.usage-head-meta code { padding: 1px 7px; border-radius: 999px; background: color-mix(in srgb, var(--u-accent) 12%, transparent); color: var(--u-accent); font-size: 11px; }
+.usage-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 10px 0; border-bottom: 1px dashed var(--border); margin-bottom: 10px; }
 .usage-stats div { text-align: center; }
-.usage-stats strong { display: block; font-size: clamp(1.3rem, 2.6vw, 1.8rem); letter-spacing: -.02em; line-height: 1.15; }
-.usage-stats span { color: var(--text-muted); font-size: 12px; }
-.usage-heatmap { display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-flow: column; gap: 3px; margin-bottom: 8px; }
+.usage-stats strong { display: block; font-size: clamp(1rem, 1.8vw, 1.25rem); letter-spacing: -.02em; line-height: 1.15; }
+.usage-stats span { color: var(--text-muted); font-size: 11px; }
+.usage-heatmap { display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-flow: column; gap: 2px; margin-bottom: 6px; }
 .usage-heatmap i, .usage-scale i { display: block; aspect-ratio: 1; border-radius: 3px; background: var(--bg-tertiary); }
 .usage-heatmap .u-void { visibility: hidden; }
 .usage-card .u1 { background: color-mix(in srgb, var(--u-accent) 25%, var(--bg-tertiary)); }
@@ -1446,13 +1450,13 @@ button:active, .action-primary:active, .action-secondary:active, .lead-signal:ac
 .usage-card .u3 { background: color-mix(in srgb, var(--u-accent) 65%, var(--bg-tertiary)); }
 .usage-card .u4 { background: color-mix(in srgb, var(--u-accent) 85%, var(--bg-tertiary)); }
 .usage-card .u5 { background: color-mix(in srgb, var(--u-accent) 100%, black 12%); }
-.usage-scale { display: flex; align-items: center; justify-content: flex-end; gap: 3px; color: var(--text-muted); font-size: 11px; margin-bottom: 14px; }
-.usage-scale i { width: 11px; }
-.usage-modelbar { display: flex; height: 8px; border-radius: 999px; overflow: hidden; margin-bottom: 10px; background: var(--bg-tertiary); }
+.usage-scale { display: flex; align-items: center; justify-content: flex-end; gap: 3px; color: var(--text-muted); font-size: 10px; margin-bottom: 10px; }
+.usage-scale i { width: 9px; }
+.usage-modelbar { display: flex; height: 6px; border-radius: 999px; overflow: hidden; margin-bottom: 8px; background: var(--bg-tertiary); }
 .usage-modelbar i { background: var(--u-accent); min-width: 2px; }
-.usage-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 12px; }
-.usage-legend span { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); }
-.usage-legend i { width: 9px; height: 9px; border-radius: 2px; background: var(--u-accent); }
+.usage-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--text-secondary); font-size: 11px; }
+.usage-legend span { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-mono); }
+.usage-legend i { width: 8px; height: 8px; border-radius: 2px; background: var(--u-accent); }
 @media (max-width: 640px) {
   .usage-stats { grid-template-columns: repeat(2, 1fr); gap: 12px 8px; }
 }
