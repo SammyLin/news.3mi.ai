@@ -306,16 +306,23 @@ export async function getArticleBySlug(db: D1Database, slug: string): Promise<Ar
 async function getTagsForArticles(db: D1Database, articleIds: number[]): Promise<Map<number, Tag[]>> {
   if (articleIds.length === 0) return new Map();
 
-  const placeholders = articleIds.map(() => '?').join(',');
-  const result = await db.prepare(`
-    SELECT at.article_id, t.id, t.slug, t.name
-    FROM article_tags at
-    JOIN tags t ON at.tag_id = t.id
-    WHERE at.article_id IN (${placeholders})
-  `).bind(...articleIds).all();
+  // D1 綁定參數上限 100,超過會丟 exception — 分批查
+  const BATCH = 90;
+  const rows: any[] = [];
+  for (let i = 0; i < articleIds.length; i += BATCH) {
+    const batch = articleIds.slice(i, i + BATCH);
+    const placeholders = batch.map(() => '?').join(',');
+    const result = await db.prepare(`
+      SELECT at.article_id, t.id, t.slug, t.name
+      FROM article_tags at
+      JOIN tags t ON at.tag_id = t.id
+      WHERE at.article_id IN (${placeholders})
+    `).bind(...batch).all();
+    rows.push(...(result.results as any[]));
+  }
 
   const map = new Map<number, Tag[]>();
-  for (const row of result.results as any[]) {
+  for (const row of rows) {
     if (!map.has(row.article_id)) map.set(row.article_id, []);
     map.get(row.article_id)!.push({
       id: row.id,

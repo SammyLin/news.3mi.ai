@@ -161,7 +161,7 @@ async function loadArticle() {
       ? `<div class="authorship-note">${lucide(authorship.icon)}<span>本文翻譯自 <a href="${escapeAttr(article.source_url)}" target="_blank" rel="noopener">${sourceLabel}</a> 的原文，著作權屬原作者；譯文僅供參考，請以原文為準。</span></div>`
       : '';
     const disclosure = article.authorship === 'ai'
-      ? `<div class="authorship-disclosure">${lucide(AUTHORSHIP.ai.icon)}<span>本文由 AI 整理撰寫，經站長挑選與確認後發佈。</span></div>`
+      ? `<div class="authorship-disclosure">${lucide(AUTHORSHIP.ai.icon)}<span>本文由 AI 整理撰寫，經山米挑選與確認後發佈。</span></div>`
       : article.authorship === 'translation'
         ? `<div class="authorship-disclosure">${lucide(AUTHORSHIP.translation.icon)}<span>本文為原文翻譯，非本站原創觀點。</span></div>`
         : '';

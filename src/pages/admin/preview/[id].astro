@@ -94,7 +94,7 @@ const isHttpUrl = (s: unknown) => typeof s === 'string' && /^https?:\/\//i.test(
     <div class="markdown-content" set:html={contentHtml} />
 
     {article.authorship === 'ai' && (
-      <div class="authorship-disclosure"><Sparkles size={14} /><span>本文由 AI 整理撰寫，經站長挑選與確認後發佈。</span></div>
+      <div class="authorship-disclosure"><Sparkles size={14} /><span>本文由 AI 整理撰寫，經山米挑選與確認後發佈。</span></div>
     )}
     {article.authorship === 'translation' && (
       <div class="authorship-disclosure"><Languages size={14} /><span>本文為原文翻譯，非本站原創觀點。</span></div>
