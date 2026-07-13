@@ -63,17 +63,17 @@ function buildHeatmap(summary: UsageSummary) {
   const max = Math.max(1, ...summary.days.map((d) => d.tokens));
   const lastDay = summary.days[summary.days.length - 1].day;
   const end = new Date(`${lastDay}T00:00:00Z`);
-  const cells: { day: string; level: number }[] = [];
+  const cells: { day: string; level: number; tokens: number }[] = [];
   for (let i = HEATMAP_DAYS - 1; i >= 0; i--) {
     const date = new Date(end.getTime() - i * 86400000);
     const day = date.toISOString().slice(0, 10);
-    const tokens = byDay.get(day);
+    const tokens = byDay.get(day) || 0;
     let level = 0;
-    if (tokens && tokens > 0) {
+    if (tokens > 0) {
       const ratio = tokens / max;
       level = ratio > 0.8 ? 5 : ratio > 0.6 ? 4 : ratio > 0.4 ? 3 : ratio > 0.2 ? 2 : 1;
     }
-    cells.push({ day, level });
+    cells.push({ day, level, tokens });
   }
   const fmt = (d: string) => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
   return { cells, rangeStart: fmt(cells[0].day), rangeEnd: fmt(lastDay) };
@@ -177,7 +177,7 @@ function whyRead(article: ArticleWithMeta) {
               </div>
               <div class="usage-heatmap" role="img" aria-label={`${label} 近 3 個月每日用量熱力圖`}>
                 {cells.map((c) => (
-                  <i class={`u${c.level}`} title={c.day}></i>
+                  <i class={`u${c.level}`} data-tip={`${Number(c.day.slice(5, 7))}/${Number(c.day.slice(8, 10))} · ${c.tokens > 0 ? `${formatTokens(c.tokens)} tokens` : '無用量'}`}></i>
                 ))}
               </div>
               <div class="usage-range">
