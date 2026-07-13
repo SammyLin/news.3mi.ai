@@ -48,9 +48,7 @@ const isHttpUrl = (s: unknown) => typeof s === 'string' && /^https?:\/\//i.test(
   <div class="preview-banner">
     <Eye size={16} />
     <span>草稿預覽 — 僅 admin 可見，狀態：<strong>{article.status === 'published' ? '已發佈' : '草稿'}</strong>
-      {(article.created_via || article.gen_model || article.ingest_ip) && (
-        <span class="text-muted">｜來源 {article.created_via || '未知'}{article.gen_model ? ` · ${article.gen_model}` : ''}{article.ingest_ip ? ` · ${article.ingest_ip}` : ''}</span>
-      )}
+      <span class="text-muted">｜來源 {article.created_via || '未知'}{article.gen_model ? ` · ${article.gen_model}` : ''}{article.ingest_ip ? ` · ${article.ingest_ip}` : ''}</span>
     </span>
     <span class="preview-banner-actions">
       <a href={`/admin/edit/${article.id}`} class="btn">編輯</a>
