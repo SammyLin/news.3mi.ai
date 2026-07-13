@@ -34,9 +34,14 @@ if (!article) {
   return Astro.redirect('/admin');
 }
 
-// UTC ISO → 台北時間 "YYYY-MM-DD HH:mm"(sv-SE locale 剛好是這個格式)
-const fmtTaipei = (s: string | null) =>
-  s ? new Date(s).toLocaleString('sv-SE', { timeZone: 'Asia/Taipei' }).slice(0, 16) : '';
+// DB 時間戳 → 台北時間 "YYYY-MM-DD HH:mm"(sv-SE locale 剛好是這個格式)
+// DB 混存無 Z 的 UTC 字串(舊資料 / trigger 的 CURRENT_TIMESTAMP)——沒帶時區就補 Z
+const fmtTaipei = (s: string | null) => {
+  if (!s) return '';
+  let iso = s.includes('T') ? s : s.replace(' ', 'T');
+  if (!/[zZ]$|[+-]\d{2}:?\d{2}$/.test(iso)) iso += 'Z';
+  return new Date(iso).toLocaleString('sv-SE', { timeZone: 'Asia/Taipei' }).slice(0, 16);
+};
 ---
 
 <AdminLayout>

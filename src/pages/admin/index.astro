@@ -242,10 +242,14 @@ import { ClipboardList } from 'lucide-astro';
 
     const PIN_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1z"/></svg>';
 
-    // UTC ISO → 台北時間 "YYYY-MM-DD HH:mm"
+    // DB 時間戳 → 台北時間 "YYYY-MM-DD HH:mm"
+    // DB 混存 "2026-02-19T09:37:28"(無 Z)與 "2026-07-13 05:44:36"(trigger),都是 UTC——
+    // 沒帶時區標記就補 Z,否則瀏覽器會當本地時間、+8 消失
     function fmtDT(s: unknown) {
       if (typeof s !== 'string' || !s) return '';
-      return new Date(s).toLocaleString('sv-SE', { timeZone: 'Asia/Taipei' }).slice(0, 16);
+      let iso = s.includes('T') ? s : s.replace(' ', 'T');
+      if (!/[zZ]$|[+-]\d{2}:?\d{2}$/.test(iso)) iso += 'Z';
+      return new Date(iso).toLocaleString('sv-SE', { timeZone: 'Asia/Taipei' }).slice(0, 16);
     }
 
     function escapeHtml(s: unknown) {
