@@ -49,7 +49,10 @@ export const POST: APIRoute = async (context) => {
   if (!days || days.length === 0) return json({ error: 'days must be a non-empty array' }, 400);
   if (days.length > 400) return json({ error: 'too many days in one request (max 400)' }, 400);
 
+  // 機器識別：每台機器只覆寫自己的列，首頁同日 SUM，重推不重複計
+  const machine = String(body.machine || 'main').toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 40) || 'main';
+
   const db = getDB(context);
-  const written = await upsertUsageDays(db, provider as 'claude' | 'codex', days);
-  return json({ success: true, provider, written });
+  const written = await upsertUsageDays(db, provider as 'claude' | 'codex', days, machine);
+  return json({ success: true, provider, machine, written });
 };

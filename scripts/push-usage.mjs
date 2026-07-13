@@ -12,8 +12,12 @@
 // 需要環境變數 USAGE_INGEST_KEY（在 ~/.zshrc.local）。可掛 cron / launchd 每日跑。
 
 import { execFileSync } from 'node:child_process';
+import { hostname } from 'node:os';
 
 const SITE = process.env.USAGE_SITE_URL || 'https://reads.3mi.ai';
+// 機器識別：多台電腦各推各的列，網站端同日加總。可用 USAGE_MACHINE 覆寫。
+const MACHINE = (process.env.USAGE_MACHINE || hostname().split('.')[0])
+  .toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 40);
 const KEY = process.env.USAGE_INGEST_KEY || process.env.OPENCLAW_NEWS_INGEST_KEY || process.env.OPENCLAW_INGEST_KEY;
 const PROVIDERS = ['claude', 'codex'];
 const CHUNK = 400; // API 單次上限
@@ -79,14 +83,14 @@ for (const provider of PROVIDERS) {
     const res = await fetch(`${SITE}/api/usage`, {
       method: 'POST',
       headers: { authorization: `Bearer ${KEY}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ provider, days: chunk }),
+      body: JSON.stringify({ provider, machine: MACHINE, days: chunk }),
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) {
       console.error(`${provider}: HTTP ${res.status} ${JSON.stringify(body)}`);
       process.exit(1);
     }
-    console.log(`${provider}: 寫入 ${body.written} 天`);
+    console.log(`${provider} (${MACHINE}): 寫入 ${body.written} 天`);
   }
 }
 console.log('完成');

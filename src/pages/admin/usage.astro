@@ -11,17 +11,41 @@ const isAuthed = await isAuthenticated(Astro.request, (Astro.locals as any)?.run
 if (!isAuthed) return Astro.redirect('/admin/login');
 
 let rows: any[] = [];
+let machineSummary: any[] = [];
 try {
   const db = getDB(Astro);
   const result = await db.prepare(`
-    SELECT provider, day, tokens, cost_usd, messages, models, updated_at
+    SELECT provider, day, machine, tokens, cost_usd, messages, models, updated_at
     FROM usage_daily
-    ORDER BY day DESC, provider ASC
-    LIMIT 60
+    ORDER BY day DESC, provider ASC, machine ASC
+    LIMIT 120
   `).all();
   rows = (result.results as any[]) || [];
+
+  const summaryResult = await db.prepare(`
+    SELECT provider, machine, COUNT(*) as days, SUM(tokens) as tokens, SUM(cost_usd) as cost_usd,
+           MIN(day) as first_day, MAX(day) as last_day
+    FROM usage_daily
+    GROUP BY provider, machine
+    ORDER BY provider ASC, machine ASC
+  `).all();
+  machineSummary = (summaryResult.results as any[]) || [];
 } catch (e) {
   console.error(e);
+}
+
+function topModels(raw: unknown): string {
+  if (!raw || typeof raw !== 'string') return '';
+  try {
+    const models = JSON.parse(raw) as Record<string, number>;
+    return Object.entries(models)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([m, t]) => `${m} ${formatTokens(Number(t) || 0)}`)
+      .join(' · ');
+  } catch {
+    return '';
+  }
 }
 ---
 
@@ -45,6 +69,7 @@ try {
           </select>
         </label>
         <label>日期 <input type="date" id="u-day" required /></label>
+        <label>機器 <input type="text" id="u-machine" value="main" /></label>
         <label>Tokens <input type="number" id="u-tokens" min="0" value="0" /></label>
         <label>花費 USD <input type="number" id="u-cost" min="0" step="0.01" value="0" /></label>
         <label>Messages <input type="number" id="u-messages" min="0" value="0" /></label>
@@ -60,22 +85,49 @@ try {
   </div>
 
   <div class="card usage-admin-card">
-    <h2>近 60 筆</h2>
+    <h2>各機器彙總（全期間）</h2>
+    {machineSummary.length === 0 ? (
+      <p class="usage-admin-hint">還沒有用量資料。</p>
+    ) : (
+      <table class="usage-table">
+        <thead>
+          <tr><th>Provider</th><th>機器</th><th>天數</th><th>Tokens</th><th>花費</th><th>期間</th></tr>
+        </thead>
+        <tbody>
+          {machineSummary.map((s) => (
+            <tr>
+              <td>{s.provider}</td>
+              <td>{s.machine}</td>
+              <td>{s.days}</td>
+              <td>{formatTokens(Number(s.tokens) || 0)}</td>
+              <td>{formatCost(Number(s.cost_usd) || 0)}</td>
+              <td>{s.first_day} → {s.last_day}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
+  </div>
+
+  <div class="card usage-admin-card">
+    <h2>每日明細（近 120 筆，每機器一列）</h2>
     {rows.length === 0 ? (
       <p class="usage-admin-hint">還沒有用量資料。</p>
     ) : (
       <table class="usage-table">
         <thead>
-          <tr><th>日期</th><th>Provider</th><th>Tokens</th><th>花費</th><th>Messages</th><th>更新</th></tr>
+          <tr><th>日期</th><th>Provider</th><th>機器</th><th>Tokens</th><th>花費</th><th>Messages</th><th>模型（前三）</th><th>更新</th></tr>
         </thead>
         <tbody>
           {rows.map((r) => (
             <tr>
               <td>{r.day}</td>
               <td>{r.provider}</td>
+              <td>{r.machine}</td>
               <td>{formatTokens(Number(r.tokens) || 0)}</td>
               <td>{formatCost(Number(r.cost_usd) || 0)}</td>
               <td>{r.messages}</td>
+              <td class="usage-models-cell">{topModels(r.models)}</td>
               <td>{String(r.updated_at || '').slice(0, 10)}</td>
             </tr>
           ))}
@@ -116,6 +168,7 @@ try {
     .usage-table th { text-align: left; padding: 8px 10px; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; border-bottom: 1px solid var(--border); }
     .usage-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
     .usage-table tr:last-child td { border-bottom: 0; }
+    .usage-models-cell { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
   </style>
 
   <script>
@@ -137,6 +190,7 @@ try {
 
       const body = {
         provider: (document.getElementById('u-provider') as HTMLSelectElement).value,
+        machine: (document.getElementById('u-machine') as HTMLInputElement).value || 'main',
         days: [{
           day: (document.getElementById('u-day') as HTMLInputElement).value,
           tokens: Number((document.getElementById('u-tokens') as HTMLInputElement).value) || 0,

@@ -26,24 +26,31 @@ export async function getUsageSummary(
   provider: 'claude' | 'codex',
   limitDays = 90 // 統計視窗：近 3 個月
 ): Promise<UsageSummary | null> {
+  const since = new Date(Date.now() - limitDays * 86400000).toISOString().slice(0, 10);
   const result = await db.prepare(`
     SELECT day, tokens, cost_usd, messages, models
     FROM usage_daily
-    WHERE provider = ?
-    ORDER BY day DESC
-    LIMIT ?
-  `).bind(provider, limitDays).all();
+    WHERE provider = ? AND day >= ?
+    ORDER BY day ASC
+  `).bind(provider, since).all();
 
   const rows = (result.results as any[]) || [];
   if (rows.length === 0) return null;
 
-  const days: UsageDay[] = rows.reverse().map((r) => ({
-    day: r.day,
-    tokens: Number(r.tokens) || 0,
-    cost_usd: Number(r.cost_usd) || 0,
-    messages: Number(r.messages) || 0,
-    models: safeParseModels(r.models),
-  }));
+  // 同一天可能有多台機器的列 → SUM 合併
+  const byDay = new Map<string, UsageDay>();
+  for (const r of rows) {
+    const day = r.day;
+    const entry = byDay.get(day) || { day, tokens: 0, cost_usd: 0, messages: 0, models: {} };
+    entry.tokens += Number(r.tokens) || 0;
+    entry.cost_usd += Number(r.cost_usd) || 0;
+    entry.messages += Number(r.messages) || 0;
+    for (const [model, tokens] of Object.entries(safeParseModels(r.models))) {
+      entry.models[model] = (entry.models[model] || 0) + (Number(tokens) || 0);
+    }
+    byDay.set(day, entry);
+  }
+  const days: UsageDay[] = [...byDay.values()].sort((a, b) => a.day.localeCompare(b.day));
 
   const totals = days.reduce(
     (acc, d) => ({
@@ -89,20 +96,21 @@ export async function getUsageSummary(
   };
 }
 
-/** 依 provider+day upsert 一批日資料 */
+/** 依 provider+day+machine upsert 一批日資料（每台機器只覆寫自己的列） */
 export async function upsertUsageDays(
   db: D1Database,
   provider: 'claude' | 'codex',
-  days: Partial<UsageDay>[]
+  days: Partial<UsageDay>[],
+  machine = 'main'
 ): Promise<number> {
   let written = 0;
   for (const d of days) {
     const day = String(d.day || '').slice(0, 10);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) continue;
     await db.prepare(`
-      INSERT INTO usage_daily (provider, day, tokens, cost_usd, messages, models, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-      ON CONFLICT(provider, day) DO UPDATE SET
+      INSERT INTO usage_daily (provider, day, machine, tokens, cost_usd, messages, models, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(provider, day, machine) DO UPDATE SET
         tokens = excluded.tokens,
         cost_usd = excluded.cost_usd,
         messages = excluded.messages,
@@ -111,6 +119,7 @@ export async function upsertUsageDays(
     `).bind(
       provider,
       day,
+      machine,
       Math.max(0, Math.round(Number(d.tokens) || 0)),
       Math.max(0, Number(d.cost_usd) || 0),
       Math.max(0, Math.round(Number(d.messages) || 0)),
