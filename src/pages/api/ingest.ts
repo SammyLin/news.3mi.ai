@@ -45,6 +45,11 @@ export const POST: APIRoute = async (context) => {
   if (!title || !contentMd || !sourceUrl) return json({ error: 'title, content_md, source_url are required' }, 400);
   if (!/^https?:\/\//i.test(sourceUrl)) return json({ error: 'source_url must be an http(s) URL' }, 400);
 
+  // 原始發佈日(搬舊文用):ISO 8601,無效值忽略、不擋件
+  const publishedAt = typeof body.published_at === 'string' && !Number.isNaN(Date.parse(body.published_at))
+    ? new Date(body.published_at).toISOString()
+    : undefined;
+
   const db = getDB(context);
   const slug = slugify(String(body.slug || title));
   const existing = await db.prepare('SELECT id FROM articles WHERE source_url=? OR slug=? LIMIT 1').bind(sourceUrl, slug).first() as { id: number } | null;
@@ -89,6 +94,7 @@ export const POST: APIRoute = async (context) => {
     event_key: body.event_key ? slugify(String(body.event_key)) : undefined,
     category_id: catId,
     status: body.status === 'draft' ? 'draft' as const : 'published' as const,
+    published_at: publishedAt,
     // is_featured / is_pinned 是編輯位（今日觀點 / 置頂），只能在 /admin 設定——
     // ingest 不寫入，避免 pipeline 佔首頁主位、re-ingest 洗掉山米勾的旗標。
     tags: Array.isArray(body.tags) ? body.tags.map(String) : [],
@@ -97,6 +103,7 @@ export const POST: APIRoute = async (context) => {
   // 提醒 OpenClaw：沒給真圖時退回抓 og:image 或自動產生封面；沒報模型時提醒補。
   const warningList: string[] = [];
   if (coverSource === 'generated') warningList.push('未提供 cover_image 且原文無 og:image：已自動產生品牌封面。建議帶原文 og:image 以取得真實縮圖。');
+  if (body.published_at && !publishedAt) warningList.push('published_at 格式無效（需 ISO 8601，如 2013-05-01 或 2013-05-01T08:00:00Z），已忽略、改用預設時間。');
   if (!data.created_via) warningList.push('未提供 created_via：請帶送件 agent 名稱（hermes-agent / openclaw / claude-code / codex…），供 admin 追蹤產製來源。');
   if (!data.gen_model) warningList.push('未提供 gen_model：請在 payload 帶產文模型 id（如 claude-sonnet-5），供 admin 追蹤產製來源。');
   const warnings = warningList.length ? warningList : undefined;

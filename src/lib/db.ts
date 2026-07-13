@@ -517,6 +517,7 @@ export async function createArticle(
     is_featured?: number;
     is_pinned?: number;
     reading_time?: number;
+    published_at?: string;
     tags?: string[];
   }
 ): Promise<number> {
@@ -549,7 +550,7 @@ export async function createArticle(
     data.is_featured || 0,
     data.is_pinned || 0,
     data.reading_time || estimateReadingTime(data.content_md),
-    data.status === 'published' ? now : null,
+    data.published_at || (data.status === 'published' ? now : null),
     now,
     now
   ).run();
@@ -599,6 +600,7 @@ export async function updateArticle(
     is_featured?: number;
     is_pinned?: number;
     reading_time?: number;
+    published_at?: string;
     tags?: string[];
   }
 ): Promise<void> {
@@ -632,6 +634,7 @@ export async function updateArticle(
     is_featured: data.is_featured,
     is_pinned: data.is_pinned,
     reading_time: data.reading_time,
+    published_at: data.published_at,
   };
 
   for (const [key, val] of Object.entries(fieldMap)) {
@@ -641,8 +644,8 @@ export async function updateArticle(
     }
   }
 
-  // 處理發布時間
-  if (data.status === 'published') {
+  // 處理發布時間(payload 已明確給 published_at 時不自動蓋)
+  if (data.status === 'published' && data.published_at === undefined) {
     const current = await db.prepare(`SELECT published_at FROM articles WHERE id = ?`).bind(id).first();
     if (!current?.published_at) {
       fields.push(`published_at = ?`);
