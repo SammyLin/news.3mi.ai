@@ -24,7 +24,7 @@ export const USAGE_PROVIDERS = ['claude', 'codex'] as const;
 export async function getUsageSummary(
   db: D1Database,
   provider: 'claude' | 'codex',
-  limitDays = 30 // 統計視窗：近 30 天
+  limitDays = 90 // 統計視窗：近 3 個月
 ): Promise<UsageSummary | null> {
   const result = await db.prepare(`
     SELECT day, tokens, cost_usd, messages, models

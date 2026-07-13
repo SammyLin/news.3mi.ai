@@ -1409,11 +1409,11 @@ button:active, .action-primary:active, .action-secondary:active, .lead-signal:ac
 .lead-signal p { color: var(--text-secondary); font-size: 15px; line-height: 1.75; max-width: 56ch; }
 .lead-signal small { display: block; margin-top: 28px; color: var(--text-muted); }
 /* 今日觀點 — 低調版：不做大 hero，資訊密度優先；align-self 避免被右欄撐高 */
-.lead-signal--calm { min-height: auto; padding: 18px 22px; align-self: start; }
-.lead-signal--calm > span { margin-bottom: 8px; }
-.lead-signal--calm h2 { font-size: clamp(1.2rem, 2.4vw, 1.55rem); margin-bottom: 8px; }
-.lead-signal--calm p { font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.lead-signal--calm small { margin-top: 10px; }
+.lead-signal--calm { min-height: auto; padding: 14px 18px; align-self: start; }
+.lead-signal--calm > span { margin-bottom: 6px; font-size: 11px; }
+.lead-signal--calm h2 { font-size: clamp(1.05rem, 2vw, 1.3rem); margin-bottom: 6px; }
+.lead-signal--calm p { font-size: 13px; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.lead-signal--calm small { margin-top: 8px; font-size: 12px; }
 
 /* 置頂精選 — 首頁右欄 */
 .pinned-rail { padding: 20px 22px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-secondary); align-self: start; }
@@ -1465,12 +1465,12 @@ button:active, .action-primary:active, .action-secondary:active, .lead-signal:ac
 .usage-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--u-accent); }
 .usage-head-meta { display: flex; gap: 8px; color: var(--text-muted); font-size: 11px; align-items: center; }
 .usage-head-meta code { padding: 1px 7px; border-radius: 999px; background: color-mix(in srgb, var(--u-accent) 12%, transparent); color: var(--u-accent); font-size: 11px; }
-.usage-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 10px 0; border-bottom: 1px dashed var(--border); margin-bottom: 10px; }
+.usage-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; padding: 8px 0; border-bottom: 1px dashed var(--border); margin-bottom: 8px; }
 .usage-stats div { text-align: center; }
-.usage-stats strong { display: block; font-size: clamp(1rem, 1.8vw, 1.25rem); letter-spacing: -.02em; line-height: 1.15; }
-.usage-stats span { color: var(--text-muted); font-size: 11px; }
-.usage-heatmap { display: grid; grid-template-rows: 1fr; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 3px; margin-bottom: 5px; }
-.usage-heatmap i { display: block; aspect-ratio: 1; max-height: 18px; border-radius: 3px; background: var(--bg-tertiary); }
+.usage-stats strong { display: block; font-size: 0.95rem; letter-spacing: -.02em; line-height: 1.15; }
+.usage-stats span { color: var(--text-muted); font-size: 10px; }
+.usage-heatmap { display: grid; grid-template-columns: repeat(45, 1fr); gap: 2px; margin-bottom: 5px; }
+.usage-heatmap i { display: block; aspect-ratio: 1; border-radius: 2px; background: var(--bg-tertiary); }
 .usage-range { display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 10px; margin-bottom: 10px; }
 .usage-scale-inline { display: inline-flex; align-items: center; gap: 3px; }
 .usage-scale-inline i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: var(--bg-tertiary); }
