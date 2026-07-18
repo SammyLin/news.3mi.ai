@@ -65,6 +65,19 @@ for (const row of report.daily || []) {
   }
 }
 
+// 網路瞬斷（ECONNRESET 等)重試,免得 cron 單次失敗漏一天
+async function postWithRetry(url, init, attempts = 3) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await fetch(url, init);
+    } catch (err) {
+      if (attempt >= attempts) throw err;
+      console.error(`fetch 失敗(${err.cause?.code || err.message}),${attempt * 5} 秒後重試 ${attempt}/${attempts - 1}`);
+      await new Promise((r) => setTimeout(r, attempt * 5000));
+    }
+  }
+}
+
 for (const provider of PROVIDERS) {
   const days = byProvider.get(provider);
   if (days.length === 0) {
@@ -80,7 +93,7 @@ for (const provider of PROVIDERS) {
   }
   for (let i = 0; i < days.length; i += CHUNK) {
     const chunk = days.slice(i, i + CHUNK);
-    const res = await fetch(`${SITE}/api/usage`, {
+    const res = await postWithRetry(`${SITE}/api/usage`, {
       method: 'POST',
       headers: { authorization: `Bearer ${KEY}`, 'content-type': 'application/json' },
       body: JSON.stringify({ provider, machine: MACHINE, days: chunk }),
